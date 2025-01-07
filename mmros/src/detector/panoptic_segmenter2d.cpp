@@ -14,6 +14,8 @@
 
 #include "mmros/detector/panoptic_segmenter2d.hpp"
 
+#include "mmros/archetype/result.hpp"
+
 #include <memory>
 #include <optional>
 
@@ -47,6 +49,6 @@ Result<PanopticSegmenter2D::outputs_type> PanopticSegmenter2D::doInference(
   const std::vector<cv::Mat> & images) noexcept
 {
   // TODO(ktro2828): Implementation
-  return {};
+  return Err<outputs_type>(InferenceError_t::UNKNOWN);
 }
 }  // namespace mmros

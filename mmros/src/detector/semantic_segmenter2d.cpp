@@ -14,6 +14,8 @@
 
 #include "mmros/detector/semantic_segmenter2d.hpp"
 
+#include "mmros/archetype/result.hpp"
+
 #include <algorithm>
 #include <memory>
 #include <optional>
@@ -50,6 +52,6 @@ Result<SemanticSegmenter2D::outputs_type> SemanticSegmenter2D::doInference(
   const std::vector<cv::Mat> & images) noexcept
 {
   // TODO(ktro2828): Implementation
-  return {};
+  return Err<outputs_type>(InferenceError_t::UNKNOWN);
 }
 }  // namespace mmros

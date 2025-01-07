@@ -20,8 +20,7 @@
 #include "mmros/tensorrt/tensorrt_common.hpp"
 #include "mmros/tensorrt/utility.hpp"
 
-#include <opencv2/core.hpp>
-#include <opencv2/core/types.hpp>
+#include <opencv2/core/mat.hpp>
 
 #include <mmros_msgs/msg/box_array2d.hpp>
 

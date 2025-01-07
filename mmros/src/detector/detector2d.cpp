@@ -14,10 +14,13 @@
 
 #include "mmros/detector/detector2d.hpp"
 
+#include "mmros/archetype/result.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <vector>
 
 namespace mmros
@@ -53,8 +56,11 @@ Result<Detector2D::outputs_type> Detector2D::doInference(
 {
   std::vector<void *> buffers{};
   if (!trt_common_->setTensorsAddresses(buffers)) {
-    return {};
+    std::ostringstream os;
+    os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
+    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
   }
+
   trt_common_->enqueueV3(stream_);
 
   const auto batch_size = images.size();

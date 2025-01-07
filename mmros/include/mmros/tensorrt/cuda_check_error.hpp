@@ -25,7 +25,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace mmros
+namespace mmros::cuda
 {
 template <typename F, typename N>
 void cuda_check_error(const ::cudaError_t e, F && f, N && n)
@@ -37,8 +37,8 @@ void cuda_check_error(const ::cudaError_t e, F && f, N && n)
     throw std::runtime_error{s.str()};
   }
 }
-}  // namespace mmros
+}  // namespace mmros::cuda
 
-#define CHECK_CUDA_ERROR(e) (mmros::cuda_check_error(e, __FILE__, __LINE__))
+#define CHECK_CUDA_ERROR(e) (mmros::cuda::cuda_check_error(e, __FILE__, __LINE__))
 
 #endif  // MMROS__TENSORRT__CUDA_CHECK_ERROR_HPP_

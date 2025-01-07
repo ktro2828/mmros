@@ -25,7 +25,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace mmros
+namespace mmros::cuda
 {
 struct CudaDeleter
 {
@@ -76,5 +76,5 @@ CudaUniquePtrHost<T> make_unique_host(unsigned int flag = cudaHostAllocDefault)
   CHECK_CUDA_ERROR(::cudaHostAlloc(reinterpret_cast<void **>(&p), sizeof(T), flag));
   return CudaUniquePtrHost<T>{p};
 }
-}  // namespace mmros
+}  // namespace mmros::cuda
 #endif  // MMROS__TENSORRT__CUDA_UNIQUE_PTR_HPP_

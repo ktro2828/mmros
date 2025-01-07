@@ -24,7 +24,7 @@
 
 #include <memory>
 
-namespace mmros
+namespace mmros::cuda
 {
 struct StreamDeleter
 {
@@ -47,6 +47,6 @@ inline StreamUniquePtr makeCudaStream(const uint32_t flags = cudaStreamDefault)
   }
   return stream;
 }
-}  // namespace mmros
+}  // namespace mmros::cuda
 
 #endif  // MMROS__TENSORRT__STREAM_UNIQUE_PTR_HPP_

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="param_path" default="$(find-pkg-share yolox)/config/yolox.param.yaml"/>
+  <arg name="onnx_path" default="$(find-pkg-share yolox)/data/yolox_l_8x8_300e_coco-static-640x640.onnx"/>
+
+  <arg name="input/image" default="input/image"/>
+  <arg name="output/boxes" default="output/boxes"/>
+
+  <arg name="build_only" default="false"/>
+
+  <node pkg="yolox" exec="yolox_exe" output="screen">
+    <param from="$(var param_path)" allow_substs="true"/>
+    <param name="onnx_path" value="$(var onnx_path)"/>
+    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/output/boxes" to="$(var output/boxes)"/>
+    <param name="build_only" value="$(var build_only)"/>
+  </node>
+</launch>

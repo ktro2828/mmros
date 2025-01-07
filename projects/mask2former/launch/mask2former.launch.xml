@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="param_path" default="$(find-pkg-share mask2former)/config/mask2former.param.yaml"/>
+  <arg name="onnx_path" default="$(find-pkg-share mask2former)/data/mask2former_r50_8xb2-90k_cityscapes-static-512x1024.onnx"/>
+
+  <arg name="input/image" default="input/image"/>
+  <arg name="output/mask" default="output/mask"/>
+
+  <arg name="build_only" default="false"/>
+
+  <node pkg="mask2former" exec="mask2former_exe" output="screen">
+    <param from="$(var param_path)" allow_substs="true"/>
+    <param name="onnx_path" value="$(var onnx_path)"/>
+    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/output/mask" to="$(var output/mask)"/>
+    <param name="build_only" value="$(var build_only)"/>
+  </node>
+</launch>

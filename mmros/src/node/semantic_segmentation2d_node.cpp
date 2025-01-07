@@ -25,9 +25,8 @@
 
 namespace mmros
 {
-SemanticSegmentation2dNode::SemanticSegmentation2dNode(
-  const std::string & node_name, const rclcpp::NodeOptions & options)
-: rclcpp::Node(node_name, options)
+SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions & options)
+: rclcpp::Node("semantic_segmentation2d", options)
 {
   {
     auto onnx_path = declare_parameter<std::string>("onnx_path");
@@ -79,3 +78,6 @@ void SemanticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
   }
 }
 }  // namespace mmros
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(mmros::SemanticSegmentation2dNode)

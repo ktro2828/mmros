@@ -61,13 +61,31 @@ target_link_libraries(
 
 ament_target_dependencies(
   ${PROJECT_NAME} mmros_msgs cv_bridge rclcpp
-  sensor_msgs)
+  rclcpp_components sensor_msgs)
 
 target_compile_definitions(
   ${PROJECT_NAME}
   PRIVATE
     TENSORRT_VERSION_MAJOR=${TENSORRT_VERSION_MAJOR}
 )
+
+# -------- register composable nodes --------
+# detection2d
+rclcpp_components_register_node(
+  ${PROJECT_NAME} PLUGIN "mmros::Detection2dNode"
+  EXECUTABLE ${PROJECT_NAME}_detection2d_exe)
+
+# semantic segmentation2d
+rclcpp_components_register_node(
+  ${PROJECT_NAME} PLUGIN
+  "mmros::SemanticSegmentation2dNode" EXECUTABLE
+  ${PROJECT_NAME}_semantic_segmentation2d_exe)
+
+# panoptic segmentation2d
+rclcpp_components_register_node(
+  ${PROJECT_NAME} PLUGIN
+  "mmros::PanopticSegmentation2dNode" EXECUTABLE
+  ${PROJECT_NAME}_panoptic_segmentation2d_exe)
 
 # -------- testing targets --------
 if(BUILD_TESTING)

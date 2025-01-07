@@ -8,7 +8,7 @@
 
   <arg name="build_only" default="false"/>
 
-  <node pkg="mask2former" exec="mask2former_exe" output="screen">
+  <node pkg="mmros" exec="mmros_semantic_segmentation2d_exe" name="mask2former" output="screen">
     <param from="$(var param_path)" allow_substs="true"/>
     <param name="onnx_path" value="$(var onnx_path)"/>
     <remap from="~/input/image" to="$(var input/image)"/>

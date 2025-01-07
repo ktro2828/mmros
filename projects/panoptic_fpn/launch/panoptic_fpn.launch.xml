@@ -9,7 +9,7 @@
 
   <arg name="build_only" default="false"/>
 
-  <node pkg="panoptic_fpn" exec="panoptic_fpn_exe" output="screen">
+  <node pkg="mmros" exec="mmros_panoptic_segmentation2d_exe" name="panoptic_fpn" output="screen">
     <param from="$(var param_path)" allow_substs="true"/>
     <param name="onnx_path" value="$(var onnx_path)"/>
     <remap from="~/input/image" to="$(var input/image)"/>

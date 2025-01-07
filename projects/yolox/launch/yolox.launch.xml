@@ -8,7 +8,7 @@
 
   <arg name="build_only" default="false"/>
 
-  <node pkg="yolox" exec="yolox_exe" output="screen">
+  <node pkg="mmros" exec="mmros_detection2d_exe" name="yolox" output="screen">
     <param from="$(var param_path)" allow_substs="true"/>
     <param name="onnx_path" value="$(var onnx_path)"/>
     <remap from="~/input/image" to="$(var input/image)"/>

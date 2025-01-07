@@ -16,20 +16,6 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-# -------- link targets --------
-file(GLOB_RECURSE YOLOX_SOURCES
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-ament_auto_add_library(${PROJECT_NAME} SHARED
-                       ${YOLOX_SOURCES})
-ament_target_dependencies(${PROJECT_NAME} mmros
-                          mmros_msgs)
-
-# -------- export component --------
-rclcpp_components_register_node(
-  ${PROJECT_NAME} PLUGIN
-  "mmros::yolox::YoloxNode" EXECUTABLE
-  ${PROJECT_NAME}_exe)
-
 # -------- testing --------
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

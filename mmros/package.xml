@@ -14,6 +14,7 @@
   <depend>cv_bridge</depend>
   <depend>mmros_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>sensor_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

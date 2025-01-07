@@ -22,15 +22,13 @@
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
-#include <string>
 
 namespace mmros
 {
 class SemanticSegmentation2dNode : public rclcpp::Node
 {
 public:
-  explicit SemanticSegmentation2dNode(
-    const std::string & node_name, const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit SemanticSegmentation2dNode(const rclcpp::NodeOptions & options);
 
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 

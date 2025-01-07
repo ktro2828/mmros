@@ -1,5 +1,55 @@
 # Define Project Specific Node
 
+As an example, let's create a new project package called `my_project` which deals with 2D detection task.
+
+```shell
+cd /PATH/TO/MMROS/projects
+ros2 pkg create my_project
+```
+
+## Using Default Node
+
+```shell
+projects/my_project/
+├── CMakeLists.txt
+├── config
+│   └── my_project.param.yaml
+├── data
+├── launch
+│   └── my_project.launch.xml
+└── package.xml
+```
+
+### Write the Launcher
+
+Edit your launch file, which is `projects/my_project/launch/my_project.launch.xml`, as follows:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- Model parameters and onnx file path -->
+  <arg name="param_path" default="$(find-pkg-share my_project)/config/my_project.param.yaml"/>
+  <arg name="onnx_path" default="$(find-pkg-share my_project)/data/my_project.onnx"/>
+
+  <!-- I/O topic names -->
+  <arg name="input/image" default="input/image"/>
+  <arg name="output/boxes" default="output/boxes"/>
+
+  <!-- Flag if only building TensorRT engine -->
+  <arg name="build_only" default="false"/>
+
+  <node pkg="mmros" exec="mmros_detection2d_exe" name="my_project" output="screen">
+    <param from="$(var param_path)" allow_substs="true"/>
+    <param name="onnx_path" value="$(var onnx_path)"/>
+    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/output/boxes" to="$(var output/boxes)"/>
+    <param name="build_only" value="$(var build_only)"/>
+  </node>
+</launch>
+```
+
+## (OPTIONAL) Defining Custom Node
+
 ```shell
 projects/my_project/
 ├── CMakeLists.txt
@@ -14,12 +64,12 @@ projects/my_project/
     └── my_project_node.hpp
 ```
 
-## Write the Publisher Node
+### Write the Publisher Node
 
 Edit your header file, which is `projects/my_project/src/my_project_node.hpp`, as follows:
 
 ```c++
-#include <mmros/nodes/detection2d_node.hpp>
+#include <mmros/node/detection2d_node.hpp>
 
 namespace mmros::my_project
 {
@@ -45,7 +95,7 @@ MyProject::MyProject(const rclcpp::NodeOptions & options) : Detection2dNode("my_
 RCLCPP_COMPONENTS_REGISTER_NODE(mmros::my_project::MyProjectNode)
 ```
 
-## Write the Launcher
+### Write the Launcher
 
 Edit your launch file, which is `projects/my_project/launch/my_project.launch.xml`, as follows:
 
@@ -73,7 +123,7 @@ Edit your launch file, which is `projects/my_project/launch/my_project.launch.xm
 </launch>
 ```
 
-## Add Dependencies
+### Add Dependencies
 
 Edit your project's `package.xml`:
 
@@ -102,7 +152,7 @@ Edit your project's `package.xml`:
 </package>
 ```
 
-## CMakeLists.txt
+### CMakeLists.txt
 
 Edit your project's `CMakeLits.txt`:
 

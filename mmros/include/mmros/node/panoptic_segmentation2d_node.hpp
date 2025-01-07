@@ -23,15 +23,13 @@
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
-#include <string>
 
 namespace mmros
 {
 class PanopticSegmentation2dNode : public rclcpp::Node
 {
 public:
-  explicit PanopticSegmentation2dNode(
-    const std::string & node_name, const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit PanopticSegmentation2dNode(const rclcpp::NodeOptions & options);
 
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 

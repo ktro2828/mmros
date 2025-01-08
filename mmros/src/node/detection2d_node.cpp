@@ -17,7 +17,7 @@
 #include "mmros/archetype/box.hpp"
 #include "mmros/archetype/result.hpp"
 
-#include <rclcpp/logging.hpp>
+#include <image_transport/image_transport.hpp>
 
 #include <mmros_msgs/msg/detail/box_array2d__builder.hpp>
 #include <sensor_msgs/image_encodings.hpp>
@@ -38,9 +38,11 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
   }
 
   {
+    // TODO(ktro2828): Subscribe and publish for multiple images.
     using std::placeholders::_1;
-    sub_ = create_subscription<sensor_msgs::msg::Image>(
-      "~/input/image", 1, std::bind(&Detection2dNode::onImage, this, _1));
+
+    sub_ = image_transport::create_subscription(
+      this, "~/input/image", std::bind(&Detection2dNode::onImage, this, _1), "raw");
     pub_ = create_publisher<mmros_msgs::msg::BoxArray2d>("~/output/boxes", 1);
   }
 

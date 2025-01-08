@@ -17,6 +17,7 @@
 
 #include "mmros/detector/panoptic_segmenter2d.hpp"
 
+#include <image_transport/subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <mmros_msgs/msg/box_array2d.hpp>
@@ -34,8 +35,8 @@ public:
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
-  std::unique_ptr<PanopticSegmenter2D> detector_;                      //!< TensorRT detector.
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_;       //!< Input subscription.
+  std::unique_ptr<PanopticSegmenter2D> detector_;  //!< TensorRT detector.
+  image_transport::Subscriber sub_;                //!< Input image subscription.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_box_;  //!< Output box publisher.
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_mask_;     //!< Output mask publisher.
 };

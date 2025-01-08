@@ -17,6 +17,7 @@
 
 #include "mmros/detector/detector2d.hpp"
 
+#include <image_transport/subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <mmros_msgs/msg/box_array2d.hpp>
@@ -35,7 +36,7 @@ public:
 
 private:
   std::unique_ptr<Detector2D> detector_;                           //!< TensorRT detector.
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_;   //!< Input subscription.
+  image_transport::Subscriber sub_;                                //!< Input image subscription.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_;  //!< Output publisher.
 };
 }  // namespace mmros

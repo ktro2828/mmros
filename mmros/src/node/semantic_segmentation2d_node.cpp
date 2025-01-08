@@ -14,6 +14,7 @@
 
 #include "mmros/node/semantic_segmentation2d_node.hpp"
 
+#include <image_transport/image_transport.hpp>
 #include <opencv2/core/mat.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -35,10 +36,11 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
   }
 
   {
+    // TODO(ktro2828): Subscribe and publish for multiple images.
     using std::placeholders::_1;
-    sub_ = create_subscription<sensor_msgs::msg::Image>(
-      "~/input/image", 1, std::bind(&SemanticSegmentation2dNode::onImage, this, _1));
 
+    sub_ = image_transport::create_subscription(
+      this, "~/input/image", std::bind(&SemanticSegmentation2dNode::onImage, this, _1), "raw");
     pub_ = create_publisher<sensor_msgs::msg::Image>("~/output/mask", 1);
   }
 

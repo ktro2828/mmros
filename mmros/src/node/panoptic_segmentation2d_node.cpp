@@ -14,6 +14,7 @@
 
 #include "mmros/node/panoptic_segmentation2d_node.hpp"
 
+#include <image_transport/image_transport.hpp>
 #include <opencv2/core/mat.hpp>
 
 #include <sensor_msgs/image_encodings.hpp>
@@ -35,9 +36,11 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
   }
 
   {
+    // TODO(ktro2828): Subscribe and publish for multiple images.
     using std::placeholders::_1;
-    sub_ = create_subscription<sensor_msgs::msg::Image>(
-      "~/input/image", 1, std::bind(&PanopticSegmentation2dNode::onImage, this, _1));
+
+    sub_ = image_transport::create_subscription(
+      this, "~/input/image", std::bind(&PanopticSegmentation2dNode::onImage, this, _1), "raw");
 
     pub_box_ = create_publisher<mmros_msgs::msg::BoxArray2d>("~/output/boxes", 1);
     pub_mask_ = create_publisher<sensor_msgs::msg::Image>("~/output/mask", 1);

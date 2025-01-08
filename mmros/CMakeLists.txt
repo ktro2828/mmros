@@ -60,8 +60,13 @@ target_link_libraries(
   ${OpenCV_LIBS} ${TENSORRT_LIBRARIES})
 
 ament_target_dependencies(
-  ${PROJECT_NAME} mmros_msgs cv_bridge rclcpp
-  rclcpp_components sensor_msgs)
+  ${PROJECT_NAME}
+  mmros_msgs
+  cv_bridge
+  rclcpp
+  rclcpp_components
+  sensor_msgs
+  image_transport)
 
 target_compile_definitions(
   ${PROJECT_NAME}

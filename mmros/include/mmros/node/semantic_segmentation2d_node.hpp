@@ -17,6 +17,7 @@
 
 #include "mmros/detector/semantic_segmenter2d.hpp"
 
+#include <image_transport/subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
@@ -33,9 +34,9 @@ public:
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
-  std::unique_ptr<SemanticSegmenter2D> detector_;                 //!< TensorRT detector.
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_;  //!< Input subscription.
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;     //!< Output publisher.
+  std::unique_ptr<SemanticSegmenter2D> detector_;              //!< TensorRT detector.
+  image_transport::Subscriber sub_;                            //!< Input image subscription.
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;  //!< Output publisher.
 };
 }  // namespace mmros
 #endif  // MMROS__NODE__SEMANTIC_SEGMENTATION2D_NODE_HPP_

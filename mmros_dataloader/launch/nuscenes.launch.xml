@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="version" default="v1.0-mini"/>
+  <arg name="data_root" default="$(find-pkg-share mmros_dataloader)/data/nuscenes"/>
+  <arg name="timer_period_sec" default="0.1"/>
+
+  <arg name="publish_all_scenes" default="true"/>
+  <arg name="scene_token" default="bebf5f5b2a674631ab5c88fd1aa9e87a"/>
+
+  <arg name="publish_annotation" default="false"/>
+
+  <node pkg="mmros_dataloader" exec="mmros_dataloader_nuscenes_exe" output="screen">
+    <param name="version" value="$(var version)"/>
+    <param name="data_root" value="$(var data_root)"/>
+    <param name="timer_period_sec" value="$(var timer_period_sec)"/>
+    <param name="publish_all_scenes" value="$(var publish_all_scenes)"/>
+    <param name="scene_token" value="$(var scene_token)"/>
+    <param name="publish_annotation" value="$(var publish_annotation)"/>
+  </node>
+</launch>

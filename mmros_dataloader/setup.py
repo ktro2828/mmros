@@ -26,6 +26,7 @@ setup(
     entry_points={
         "console_scripts": [
             f"{package_name}_nuscenes_exe = {package_name}.nuscenes:main",
+            f"{package_name}_nuimages_exe = {package_name}.nuimages:main",
         ],
     },
 )

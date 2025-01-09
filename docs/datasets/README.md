@@ -5,3 +5,4 @@
 ## Dataset Support
 
 - [NuScenes](./nuscenes.md)
+- [NuImages](./nuimages.md)

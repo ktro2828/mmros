@@ -21,6 +21,8 @@
 
 namespace mmros
 {
+using outputs_type = PanopticSegmenter2D::outputs_type;
+
 PanopticSegmenter2D::PanopticSegmenter2D(const TrtCommonConfig & config)
 {
   trt_common_ = std::make_unique<TrtCommon>(config);
@@ -45,8 +47,7 @@ PanopticSegmenter2D::PanopticSegmenter2D(const TrtCommonConfig & config)
   }
 }
 
-Result<PanopticSegmenter2D::outputs_type> PanopticSegmenter2D::doInference(
-  const std::vector<cv::Mat> & images) noexcept
+Result<outputs_type> PanopticSegmenter2D::doInference(const std::vector<cv::Mat> & images) noexcept
 {
   // TODO(ktro2828): Implementation
   return Err<outputs_type>(InferenceError_t::UNKNOWN);

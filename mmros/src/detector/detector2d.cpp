@@ -27,6 +27,8 @@
 
 namespace mmros
 {
+using outputs_type = Detector2D::outputs_type;
+
 Detector2D::Detector2D(const TrtCommonConfig & config)
 {
   trt_common_ = std::make_unique<TrtCommon>(config);
@@ -53,8 +55,7 @@ Detector2D::Detector2D(const TrtCommonConfig & config)
   cudaStreamCreate(&stream_);
 }
 
-Result<Detector2D::outputs_type> Detector2D::doInference(
-  const std::vector<cv::Mat> & images) noexcept
+Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
     return Err<outputs_type>(InferenceError_t::UNKNOWN, "No image.");
@@ -128,8 +129,7 @@ cudaError_t Detector2D::preprocess(const std::vector<cv::Mat> & images) noexcept
 }
 
 /// Execute postprocess
-Result<Detector2D::outputs_type> Detector2D::postprocess(
-  const std::vector<cv::Mat> & images) noexcept
+Result<outputs_type> Detector2D::postprocess(const std::vector<cv::Mat> & images) noexcept
 {
   const auto batch_size = images.size();
 

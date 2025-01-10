@@ -41,7 +41,7 @@ public:
 
   cv::Scalar operator()(size_t index)
   {
-    size_t idx = num_color % index;
+    size_t idx = index % num_color;
     return table_.at<cv::Vec3b>(0, idx);
   }
 

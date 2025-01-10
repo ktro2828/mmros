@@ -29,6 +29,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
@@ -99,28 +100,37 @@ void BoxArray2dVisualizer::callback(
   }
 
   auto & image = in_image_ptr->image;
+  size_t count = 0;
   for (const auto & box : boxes_msg->boxes) {
     const auto xmin = std::max(0, static_cast<int>(box.x_offset));
     const auto ymin = std::max(0, static_cast<int>(box.y_offset));
     const auto xmax = std::min(static_cast<int>(box.x_offset + box.width), image.cols);
-    const auto ymax = std::max(static_cast<int>(box.y_offset + box.height), image.rows);
+    const auto ymax = std::min(static_cast<int>(box.y_offset + box.height), image.rows);
+
+    if (xmin >= xmax || ymin >= ymax) {
+      continue;
+    }
 
     const auto color = color_map_(box.label);
 
-    cv::rectangle(image, cv::Point(xmin, ymin), cv::Point(xmax, ymax), color);
+    cv::rectangle(image, cv::Point(xmin, ymin), cv::Point(xmax, ymax), color, 3);
     cv::putText(
-      image, cv::format("%s", std::to_string(box.score).c_str()), cv::Point(xmin, ymin - 5),
-      cv::FONT_HERSHEY_SIMPLEX, 1,  // font scale
+      image, cv::format("%.1f%%", box.score * 100.0), cv::Point(xmin, ymin - 5),
+      cv::FONT_HERSHEY_COMPLEX_SMALL,
+      1,  // font scale
       color,
       1,  // thickness
       cv::LINE_AA);
+    ++count;
   }
 
-  cv_bridge::CvImage out_image_msg;
-  out_image_msg.header = image_msg->header;
-  out_image_msg.image = image;
-  out_image_msg.encoding = sensor_msgs::image_encodings::RGB8;
-  pub_.publish(out_image_msg.toImageMsg());
+  if (count > 0) {
+    cv_bridge::CvImage out_image_msg;
+    out_image_msg.header = image_msg->header;
+    out_image_msg.image = image;
+    out_image_msg.encoding = sensor_msgs::image_encodings::RGB8;
+    pub_.publish(out_image_msg.toImageMsg());
+  }
 }
 }  // namespace mmrviz::visualizer
 

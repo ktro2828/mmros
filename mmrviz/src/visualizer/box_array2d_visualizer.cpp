@@ -43,8 +43,8 @@ BoxArray2dVisualizer::BoxArray2dVisualizer(const rclcpp::NodeOptions & options)
   using std::chrono_literals::operator""ms;
 
   bool use_raw = declare_parameter<bool>("use_raw");
-  timer_ = rclcpp::create_timer(
-    this, get_clock(), 100ms, [this, &use_raw]() { this->onConnect(use_raw); });
+  timer_ =
+    rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
 
   pub_ = image_transport::create_publisher(this, "~/output/image");
 }

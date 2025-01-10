@@ -47,7 +47,7 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
 
     bool use_raw = declare_parameter<bool>("use_raw");
     timer_ = rclcpp::create_timer(
-      this, get_clock(), 100ms, [this, &use_raw]() { this->onConnect(use_raw); });
+      this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
 
     pub_ = create_publisher<mmros_msgs::msg::BoxArray2d>("~/output/boxes", 1);
   }

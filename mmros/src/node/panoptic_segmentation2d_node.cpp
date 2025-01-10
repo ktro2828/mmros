@@ -46,7 +46,7 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
 
     bool use_raw = declare_parameter<bool>("use_raw");
     timer_ = rclcpp::create_timer(
-      this, get_clock(), 100ms, [this, &use_raw]() { this->onConnect(use_raw); });
+      this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
 
     pub_box_ = create_publisher<mmros_msgs::msg::BoxArray2d>("~/output/boxes", 1);
     pub_mask_ = create_publisher<sensor_msgs::msg::Image>("~/output/mask", 1);

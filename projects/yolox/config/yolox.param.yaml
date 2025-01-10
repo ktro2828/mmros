@@ -1,3 +1,4 @@
 /**:
   ros__parameters:
-    foo: true # TODO(ktro2828): Dummy parameter
+    detector_config:
+      score_threshold: 0.2

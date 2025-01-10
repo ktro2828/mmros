@@ -16,6 +16,7 @@
 
 #include "mmros/archetype/box.hpp"
 #include "mmros/archetype/result.hpp"
+#include "mmros/detector/detector2d.hpp"
 
 #include <image_transport/image_transport.hpp>
 #include <rclcpp/create_timer.hpp>
@@ -37,8 +38,11 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
 {
   {
     auto onnx_path = declare_parameter<std::string>("onnx_path");
-    TrtCommonConfig config(onnx_path);
-    detector_ = std::make_unique<Detector2D>(config);
+    TrtCommonConfig trt_config(onnx_path);
+
+    auto score_threshold = declare_parameter<double>("detector_config.score_threshold");
+    Detector2dConfig detector_config{score_threshold};
+    detector_ = std::make_unique<Detector2D>(trt_config, detector_config);
   }
 
   {
@@ -94,9 +98,6 @@ std::optional<rclcpp::QoS> Detection2dNode::getTopicQos(const std::string & quer
 
 void Detection2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
-  // TODO(ktro2828): Implementation
-  RCLCPP_INFO(get_logger(), "Subscribe input!!");
-
   cv_bridge::CvImagePtr in_image_ptr;
   try {
     in_image_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);

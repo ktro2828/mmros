@@ -26,12 +26,17 @@
 
 #include <mmros_msgs/msg/box_array2d.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <vector>
 
 namespace mmros
 {
+struct Detector2dConfig
+{
+  double score_threshold;
+};
 /**
  * @brief A class represents 2D detector using TensorRT.
  */
@@ -44,9 +49,10 @@ public:
   /**
    * @brief Construct a new Trt Detector 2d object.
    *
-   * @param config TensorRT common config.
+   * @param trt_config TensorRT common config.
+   * @param detector_config Detector config.
    */
-  explicit Detector2D(const TrtCommonConfig & config);
+  explicit Detector2D(const TrtCommonConfig & trt_config, const Detector2dConfig & detector_config);
 
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
@@ -57,12 +63,15 @@ public:
   Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
+  void initCudaPtr(size_t batch_size) noexcept;
+
   cudaError_t preprocess(const std::vector<cv::Mat> & images) noexcept;
 
   Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
 
-  std::unique_ptr<TrtCommon> trt_common_;  //!< TrtCommon pointer.
-  cudaStream_t stream_;                    //! CUDA stream.
+  std::unique_ptr<TrtCommon> trt_common_;              //!< TrtCommon pointer.
+  std::unique_ptr<Detector2dConfig> detector_config_;  //!< Detector config.
+  cudaStream_t stream_;                                //! CUDA stream.
 
   std::vector<float> scales_;             //!< Image scales for each batch.
   cuda::CudaUniquePtr<float[]> input_d_;  //!< Input image pointer on the device. [B, 3, H, W].

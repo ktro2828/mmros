@@ -17,10 +17,14 @@
 #include "mmros/archetype/result.hpp"
 #include "mmros/preprocess/image.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
+#include "mmros/tensorrt/utility.hpp"
+
+#include <NvInferRuntimeBase.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <sstream>
 #include <vector>
@@ -29,9 +33,10 @@ namespace mmros
 {
 using outputs_type = Detector2D::outputs_type;
 
-Detector2D::Detector2D(const TrtCommonConfig & config)
+Detector2D::Detector2D(const TrtCommonConfig & trt_config, const Detector2dConfig & detector_config)
 {
-  trt_common_ = std::make_unique<TrtCommon>(config);
+  trt_common_ = std::make_unique<TrtCommon>(trt_config);
+  detector_config_ = std::make_unique<Detector2dConfig>(detector_config);
 
   const auto network_input_dims = trt_common_->getTensorShape(0);
   const auto batch_size = network_input_dims.d[0];
@@ -39,12 +44,22 @@ Detector2D::Detector2D(const TrtCommonConfig & config)
   const auto in_height = network_input_dims.d[2];
   const auto in_width = network_input_dims.d[3];
 
-  // TODO(ktro2828): Check batch size for dynamic shape inference
-  auto profile_dims = std::vector<ProfileDims>(
-    {{0,
-      {4, batch_size, in_channel, in_height, in_width},
-      {4, batch_size, in_channel, in_height, in_width},
-      {4, batch_size, in_channel, in_height, in_width}}});
+  std::vector<ProfileDims> profile_dims;
+  if (batch_size == -1) {
+    // dynamic shape inference
+    profile_dims = {
+      {0,
+       {4, 1, in_channel, in_height, in_width},
+       {4, 5, in_channel, in_height, in_width},
+       {4, 10, in_channel, in_height, in_width}}};
+  } else {
+    // static shape inference
+    profile_dims = {
+      {0,
+       {4, batch_size, in_channel, in_height, in_width},
+       {4, batch_size, in_channel, in_height, in_width},
+       {4, batch_size, in_channel, in_height, in_width}}};
+  }
 
   auto profile_dims_ptr = std::make_unique<std::vector<ProfileDims>>(profile_dims);
 
@@ -61,7 +76,10 @@ Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images
     return Err<outputs_type>(InferenceError_t::UNKNOWN, "No image.");
   }
 
-  // 1. Execute preprocess
+  // 1. Init CUDA pointers
+  initCudaPtr(images.size());
+
+  // 2. Execute preprocess
   if (const auto err = preprocess(images); err != ::cudaSuccess) {
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
@@ -69,7 +87,7 @@ Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images
     return Err<outputs_type>(InferenceError_t::CUDA, os.str());
   }
 
-  // 2. Set tensors
+  // 3. Set tensors
   std::vector<void *> buffers{input_d_.get(), out_boxes_d_.get(), out_labels_d_.get()};
   if (!trt_common_->setTensorsAddresses(buffers)) {
     std::ostringstream os;
@@ -77,11 +95,35 @@ Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images
     return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
   }
 
-  // 3. Execute inference
-  trt_common_->enqueueV3(stream_);
+  // 4. Execute inference
+  if (!trt_common_->enqueueV3(stream_)) {
+    std::ostringstream os;
+    os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
+    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+  }
 
-  // 4. Execute postprocess
+  // 5. Execute postprocess
   return postprocess(images);
+}
+
+/// Initialize CUDA pointers.
+void Detector2D::initCudaPtr(size_t batch_size) noexcept
+{
+  auto get_dim_size = [&](const nvinfer1::Dims & dims) {
+    return std::accumulate(dims.d + 1, dims.d + dims.nbDims, 1, std::multiplies<int>());
+  };
+
+  auto in_dims = trt_common_->getTensorShape(0);
+  const auto in_size = get_dim_size(in_dims);
+  input_d_ = cuda::make_unique<float[]>(in_size * batch_size);
+
+  auto out_dims0 = trt_common_->getOutputDims(0);
+  const auto out_size0 = get_dim_size(out_dims0);
+  out_boxes_d_ = cuda::make_unique<float[]>(out_size0 * batch_size);
+
+  auto out_dims1 = trt_common_->getOutputDims(1);
+  const auto out_size1 = get_dim_size(out_dims1);
+  out_labels_d_ = cuda::make_unique<int[]>(out_size1 * batch_size);
 }
 
 /// Execute preprocess.
@@ -90,7 +132,6 @@ cudaError_t Detector2D::preprocess(const std::vector<cv::Mat> & images) noexcept
   // (B, C, H, W)
   const auto batch_size = images.size();
   auto in_dims = trt_common_->getTensorShape(0);
-  in_dims.d[0] = batch_size;
 
   cuda::CudaUniquePtrHost<unsigned char[]> img_buf_h;
   cuda::CudaUniquePtr<unsigned char[]> img_buf_d;
@@ -166,11 +207,14 @@ Result<outputs_type> Detector2D::postprocess(const std::vector<cv::Mat> & images
     boxes.reserve(num_detection);
     const auto & scale = scales_.at(i);
     for (size_t j = 0; j < num_detection; ++j) {
+      const auto score = out_boxes[i * num_detection * 5 + j * 5 + 4];
+      if (score < detector_config_->score_threshold) {
+        continue;
+      }
       const auto xmin = out_boxes[i * num_detection * 5 + j * 5] / scale;
       const auto ymin = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
       const auto xmax = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
       const auto ymax = out_boxes[i * num_detection * 5 + j * 5 + 3] / scale;
-      const auto score = out_boxes[i * num_detection * 5 + j * 5 + 4];
       const auto label = out_labels[i * num_detection + j];
       boxes.emplace_back(xmin, ymin, xmax, ymax, score, label);
     }

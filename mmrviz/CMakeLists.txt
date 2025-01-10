@@ -23,10 +23,17 @@ ament_auto_add_library(
   ${PROJECT_NAME}_visualizer SHARED
   ${MMRVIZ_VISUALIZER_SOURCES})
 
+# 2D boxes
 rclcpp_components_register_node(
   ${PROJECT_NAME}_visualizer PLUGIN
   "mmrviz::visualizer::BoxArray2dVisualizer"
   EXECUTABLE "box_array2d_visualizer_exe")
+
+# 2D masks
+rclcpp_components_register_node(
+  ${PROJECT_NAME}_visualizer PLUGIN
+  "mmrviz::visualizer::Segmentation2dVisualizer"
+  EXECUTABLE "segmentation2d_visualizer_exe")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

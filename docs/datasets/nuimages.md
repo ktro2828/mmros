@@ -4,15 +4,15 @@
 
 Following topics are published with the timestamp at the current ROS 2 simulation time:
 
-| Topic                                            |             Type             | Description                                                                                |
-| :----------------------------------------------- | :--------------------------: | :----------------------------------------------------------------------------------------- |
-| `/nuimages/<CAMERA>/image`                       |   `sensor_msgs/msg/Image`    | Image data of each camera.                                                                 |
-| `/nuimages/<CAMERA>/camera_info`                 | `sensor_msgs/msg/CameraInfo` | Camera Info data of each camera.                                                           |
-| `/tf`                                            |   `tf2_msgs/msg/TFMessage`   | Transform of the ego vehicle.                                                              |
-| `/tf_static`                                     |   `tf2_msgs/msg/TFMessage`   | Static transform of each sensor.                                                           |
-| `/nuimages/<CAMERA>/annotation/boxes`            | `mmros_msgs/msg/BoxArray2d`  | 2D annotated boxes, which is published if `publish_annotation:=true`.                      |
-| `/nuimages/<CAMERA>/annotation/semseg_mask`      |   `sensor_msgs/msg/Image`    | 2D annotated semantic segmentation mask, which is published if `publish_annotation:=true`. |
-| `/nuimages/<CAMERA>/annotation/instanceseg_mask` |   `sensor_msgs/msg/Image`    | 2D annotated instance segmentation mask, which is published if `publish_annotation:=true`. |
+| Topic                                         |             Type             | Description                                                                   |
+| :-------------------------------------------- | :--------------------------: | :---------------------------------------------------------------------------- |
+| `/nuimages/<CAMERA>/image`                    |   `sensor_msgs/msg/Image`    | Image data of each camera.                                                    |
+| `/nuimages/<CAMERA>/camera_info`              | `sensor_msgs/msg/CameraInfo` | Camera Info data of each camera.                                              |
+| `/tf`                                         |   `tf2_msgs/msg/TFMessage`   | Transform of the ego vehicle.                                                 |
+| `/tf_static`                                  |   `tf2_msgs/msg/TFMessage`   | Static transform of each sensor.                                              |
+| `/nuimages/<CAMERA>/annotation/boxes`         | `mmros_msgs/msg/BoxArray2d`  | 2D annotated boxes, which is published if `publish_annotation:=true`.         |
+| `/nuimages/<CAMERA>/annotation/semantic_mask` |   `sensor_msgs/msg/Image`    | 2D annotated semantic mask, which is published if `publish_annotation:=true`. |
+| `/nuimages/<CAMERA>/annotation/instance_mask` |   `sensor_msgs/msg/Image`    | 2D annotated instance mask, which is published if `publish_annotation:=true`. |
 
 ## Parameters
 

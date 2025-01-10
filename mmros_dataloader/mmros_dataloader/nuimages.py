@@ -137,8 +137,8 @@ class NuImagesPublisher(Node):
         self._cam_info_pubs: dict[str, Publisher] = {}
         if self._publish_annotation:
             self._boxes_pubs: dict[str, Publisher] = {}
-            self._semseg_mask_pubs: dict[str, Publisher] = {}
-            self._instanceseg_mask_pubs: dict[str, Publisher] = {}
+            self._semantic_mask_pubs: dict[str, Publisher] = {}
+            self._instance_mask_pubs: dict[str, Publisher] = {}
         for sensor_record in self._nuim.sensor:
             channel: str = sensor_record["channel"]
             if "camera" == sensor_record["modality"]:
@@ -167,18 +167,18 @@ class NuImagesPublisher(Node):
                     )
                     # semseg mask
                     semseg_mask_topic = osp.join(
-                        self.TOPIC_NAMESPACE, channel, "annotation", "semseg_mask"
+                        self.TOPIC_NAMESPACE, channel, "annotation", "semantic_mask"
                     )
-                    self._semseg_mask_pubs[channel] = self.create_publisher(
+                    self._semantic_mask_pubs[channel] = self.create_publisher(
                         Image,
                         semseg_mask_topic,
                         qos_profile=qos_profile,
                     )
                     # instanceseg mask
                     instanceseg_mask_topic = osp.join(
-                        self.TOPIC_NAMESPACE, channel, "annotation", "instanceseg_mask"
+                        self.TOPIC_NAMESPACE, channel, "annotation", "instance_mask"
                     )
-                    self._instanceseg_mask_pubs[channel] = self.create_publisher(
+                    self._instance_mask_pubs[channel] = self.create_publisher(
                         Image,
                         instanceseg_mask_topic,
                         qos_profile=qos_profile,
@@ -440,30 +440,20 @@ class NuImagesPublisher(Node):
         header.stamp = self.get_clock().now().to_msg() if stamp is None else stamp
 
         # semantic segmentation
-        semantic_labels = np.unique(semantic_mask)
-        semantic_image = np.zeros((*semantic_mask.shape, 3), dtype=np.uint8)
-        for i, label in enumerate(semantic_labels):
-            semantic_image[semantic_mask == label] = self._color_map.get_rgb(i)
-
         semseg_msg = self._cv_bridge.cv2_to_imgmsg(
-            semantic_image,
-            encoding="rgb8",
+            semantic_mask.astype(np.uint8),
+            encoding="mono8",
             header=header,
         )
-        self._semseg_mask_pubs[channel].publish(semseg_msg)
+        self._semantic_mask_pubs[channel].publish(semseg_msg)
 
         # instance segmentation
-        instance_ids = np.unique(instance_mask)
-        instance_image = np.zeros((*instance_mask.shape, 3), dtype=np.uint8)
-        for i, uuid in enumerate(instance_ids):
-            instance_image[instance_mask == uuid] = self._color_map.get_rgb(i)
-
         instanceseg_msg = self._cv_bridge.cv2_to_imgmsg(
-            instance_image,
-            encoding="rgb8",
+            instance_mask.astype(np.uint8),
+            encoding="mono8",
             header=header,
         )
-        self._instanceseg_mask_pubs[channel].publish(instanceseg_msg)
+        self._instance_mask_pubs[channel].publish(instanceseg_msg)
 
 
 def main(args=None) -> None:

@@ -29,7 +29,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
-from sensor_msgs.msg import CameraInfo, Image
+from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 from std_msgs.msg import Header
 from tf2_ros import TransformBroadcaster
 from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
@@ -143,9 +143,9 @@ class NuImagesPublisher(Node):
             channel: str = sensor_record["channel"]
             if "camera" == sensor_record["modality"]:
                 # image
-                image_topic = osp.join(self.TOPIC_NAMESPACE, channel, "image")
+                image_topic = osp.join(self.TOPIC_NAMESPACE, channel, "image/compressed")
                 self._image_pubs[channel] = self.create_publisher(
-                    Image,
+                    CompressedImage,
                     image_topic,
                     qos_profile=qos_profile,
                 )
@@ -166,21 +166,21 @@ class NuImagesPublisher(Node):
                         qos_profile=qos_profile,
                     )
                     # semseg mask
-                    semseg_mask_topic = osp.join(
+                    semantic_mask_topic = osp.join(
                         self.TOPIC_NAMESPACE, channel, "annotation", "semantic_mask"
                     )
                     self._semantic_mask_pubs[channel] = self.create_publisher(
                         Image,
-                        semseg_mask_topic,
+                        semantic_mask_topic,
                         qos_profile=qos_profile,
                     )
                     # instanceseg mask
-                    instanceseg_mask_topic = osp.join(
+                    instance_mask_topic = osp.join(
                         self.TOPIC_NAMESPACE, channel, "annotation", "instance_mask"
                     )
                     self._instance_mask_pubs[channel] = self.create_publisher(
                         Image,
-                        instanceseg_mask_topic,
+                        instance_mask_topic,
                         qos_profile=qos_profile,
                     )
 
@@ -323,7 +323,7 @@ class NuImagesPublisher(Node):
         # === image ===
         image_path = osp.join(self._data_root, sample_data["filename"])
         image = cv2.imread(image_path)
-        image_msg = self._cv_bridge.cv2_to_imgmsg(image, encoding="bgr8")
+        image_msg: CompressedImage = self._cv_bridge.cv2_to_compressed_imgmsg(image)
         image_msg.header = header
         self._image_pubs[channel].publish(image_msg)
 
@@ -440,20 +440,20 @@ class NuImagesPublisher(Node):
         header.stamp = self.get_clock().now().to_msg() if stamp is None else stamp
 
         # semantic segmentation
-        semseg_msg = self._cv_bridge.cv2_to_imgmsg(
+        semantic_mask_msg = self._cv_bridge.cv2_to_imgmsg(
             semantic_mask.astype(np.uint8),
             encoding="mono8",
             header=header,
         )
-        self._semantic_mask_pubs[channel].publish(semseg_msg)
+        self._semantic_mask_pubs[channel].publish(semantic_mask_msg)
 
         # instance segmentation
-        instanceseg_msg = self._cv_bridge.cv2_to_imgmsg(
+        instance_mask_msg = self._cv_bridge.cv2_to_imgmsg(
             instance_mask.astype(np.uint8),
             encoding="mono8",
             header=header,
         )
-        self._instance_mask_pubs[channel].publish(instanceseg_msg)
+        self._instance_mask_pubs[channel].publish(instance_mask_msg)
 
 
 def main(args=None) -> None:

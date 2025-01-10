@@ -4,14 +4,14 @@
 
 Following topics are published with the timestamp at the current ROS 2 simulation time:
 
-| Topic                            |             Type              | Description                                                            |
-| :------------------------------- | :---------------------------: | :--------------------------------------------------------------------- |
-| `/nuscenes/<CAMERA>/image`       |    `sensor_msgs/msg/Image`    | Image data of each camera.                                             |
-| `/nuscenes/<CAMERA>/camera_info` | `sensor_msgs/msg/CameraInfo`  | Camera Info data of each camera.                                       |
-| `/nuscenes/<LIDAR>/pointcloud`   | `sensor_msgs/msg/PointCloud2` | PointCloud data of each lidar.                                         |
-| `/tf`                            |   `tf2_msgs/msg/TFMessage`    | Transform of the ego vehicle.                                          |
-| `/tf_static`                     |   `tf2_msgs/msg/TFMessage`    | Static transform of each sensor.                                       |
-| `/nuscenes/annotation/boxes`     |  `mmros_msgs/msg/BoxArray3d`  | 3D annotation boxes, which is published if `publish_annotation:=true`. |
+| Topic                            |               Type                | Description                                                            |
+| :------------------------------- | :-------------------------------: | :--------------------------------------------------------------------- |
+| `/nuscenes/<CAMERA>/image`       | `sensor_msgs/msg/CompressedImage` | Compressed image data of each camera.                                  |
+| `/nuscenes/<CAMERA>/camera_info` |   `sensor_msgs/msg/CameraInfo`    | Camera Info data of each camera.                                       |
+| `/nuscenes/<LIDAR>/pointcloud`   |   `sensor_msgs/msg/PointCloud2`   | PointCloud data of each lidar.                                         |
+| `/tf`                            |     `tf2_msgs/msg/TFMessage`      | Transform of the ego vehicle.                                          |
+| `/tf_static`                     |     `tf2_msgs/msg/TFMessage`      | Static transform of each sensor.                                       |
+| `/nuscenes/annotation/boxes`     |    `mmros_msgs/msg/BoxArray3d`    | 3D annotation boxes, which is published if `publish_annotation:=true`. |
 
 ## Parameters
 

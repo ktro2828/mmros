@@ -30,7 +30,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.qos import QoSHistoryPolicy, QoSProfile, QoSReliabilityPolicy
-from sensor_msgs.msg import CameraInfo, Image, PointCloud2, PointField
+from sensor_msgs.msg import CameraInfo, CompressedImage, PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header
 from tf2_ros import TransformBroadcaster
@@ -165,9 +165,9 @@ class NuScenesPublisher(Node):
             channel: str = sensor_record["channel"]
             if "camera" == sensor_record["modality"]:
                 # image
-                image_topic = osp.join(self.TOPIC_NAMESPACE, channel, "image")
+                image_topic = osp.join(self.TOPIC_NAMESPACE, channel, "image/compressed")
                 self._image_pubs[channel] = self.create_publisher(
-                    Image,
+                    CompressedImage,
                     image_topic,
                     qos_profile=qos_profile,
                 )
@@ -323,7 +323,7 @@ class NuScenesPublisher(Node):
         # === image ===
         image_path = osp.join(self._data_root, sample_data["filename"])
         image = cv2.imread(image_path)
-        image_msg = self._cv_bridge.cv2_to_imgmsg(image, encoding="bgr8")
+        image_msg: CompressedImage = self._cv_bridge.cv2_to_compressed_imgmsg(image)
         image_msg.header = header
         self._image_pubs[channel].publish(image_msg)
 

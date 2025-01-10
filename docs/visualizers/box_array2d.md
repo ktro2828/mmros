@@ -2,6 +2,8 @@
 
 This node performs to visualize 2D bounding boxes on the image.
 
+![BoxArray2d](../assets/sample_box_array2d.png)
+
 ## Inputs & Outputs
 
 | Name             |            Topic            | Description       |

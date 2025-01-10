@@ -2,6 +2,8 @@
 
 This node performs to visualize 2D segmentation masks on the image.
 
+![Segmentation2d](../assets/sample_segmentation2d.png)
+
 ## Inputs & Outputs
 
 | Name             |          Topic          | Description                              |

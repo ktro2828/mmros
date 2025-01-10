@@ -22,6 +22,7 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/node_options.hpp>
 #include <rclcpp/qos.hpp>
+#include <rclcpp/timer.hpp>
 
 #include <mmros_msgs/msg/box_array2d.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -47,9 +48,11 @@ public:
     const mmros_msgs::msg::BoxArray2d::ConstSharedPtr boxes_msg);
 
 private:
+  void onConnect(bool use_raw);
+
   std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
-  bool use_raw_;
+  rclcpp::TimerBase::SharedPtr timer_;
   image_transport::SubscriberFilter image_sub_;
   message_filters::Subscriber<mmros_msgs::msg::BoxArray2d> boxes_sub_;
 

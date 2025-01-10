@@ -18,12 +18,15 @@
 #include "mmros/detector/panoptic_segmenter2d.hpp"
 
 #include <image_transport/subscriber.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/qos.hpp>
+#include <rclcpp/timer.hpp>
 
 #include <mmros_msgs/msg/box_array2d.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
+#include <optional>
+#include <string>
 
 namespace mmros
 {
@@ -35,6 +38,11 @@ public:
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
+  void onConnect(bool use_raw);
+
+  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
+
+  rclcpp::TimerBase::SharedPtr timer_;             //!< Timer.
   std::unique_ptr<PanopticSegmenter2D> detector_;  //!< TensorRT detector.
   image_transport::Subscriber sub_;                //!< Input image subscription.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_box_;  //!< Output box publisher.

@@ -40,35 +40,40 @@ namespace mmrviz::visualizer
 BoxArray2dVisualizer::BoxArray2dVisualizer(const rclcpp::NodeOptions & options)
 : rclcpp::Node("box_array2d_visualizer", options)
 {
-  use_raw_ = declare_parameter<bool>("use_raw");
+  using std::chrono_literals::operator""ms;
 
-  {
-    auto resolve_topic_name = [this](const std::string & query) {
-      {
-        return this->get_node_topics_interface()->resolve_topic_name(query);
-      }
-    };
-
-    const auto image_topic = resolve_topic_name("~/input/image");
-    auto image_topic_for_qos_query = image_topic;
-    if (!use_raw_) {
-      image_topic_for_qos_query += "/compressed";
-    }
-    const auto image_qos = getTopicQos(image_topic_for_qos_query);
-
-    const auto boxes_topic = resolve_topic_name("~/input/boxes");
-    const auto boxes_qos = getTopicQos(boxes_topic);
-
-    if (image_qos && boxes_qos) {
-      const auto conversion_type = use_raw_ ? "raw" : "compressed";
-      image_sub_.subscribe(this, image_topic, conversion_type, image_qos->get_rmw_qos_profile());
-      boxes_sub_.subscribe(this, boxes_topic, boxes_qos->get_rmw_qos_profile());
-      sync_ptr_ = std::make_shared<ExactTimeSync>(ExactTimeSyncPolicy(10), image_sub_, boxes_sub_);
-      sync_ptr_->registerCallback(&BoxArray2dVisualizer::callback, this);
-    }
-  }
+  bool use_raw = declare_parameter<bool>("use_raw");
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, [this, &use_raw]() { this->onConnect(use_raw); });
 
   pub_ = image_transport::create_publisher(this, "~/output/image");
+}
+
+void BoxArray2dVisualizer::onConnect(bool use_raw)
+{
+  auto resolve_topic_name = [this](const std::string & query) {
+    return this->get_node_topics_interface()->resolve_topic_name(query);
+  };
+
+  const auto image_topic = resolve_topic_name("~/input/image");
+  auto image_topic_for_qos_query = image_topic;
+  if (!use_raw) {
+    image_topic_for_qos_query += "/compressed";
+  }
+  const auto image_qos = getTopicQos(image_topic_for_qos_query);
+
+  const auto boxes_topic = resolve_topic_name("~/input/boxes");
+  const auto boxes_qos = getTopicQos(boxes_topic);
+
+  if (image_qos && boxes_qos) {
+    const auto transport = use_raw ? "raw" : "compressed";
+    image_sub_.subscribe(this, image_topic, transport, image_qos->get_rmw_qos_profile());
+    boxes_sub_.subscribe(this, boxes_topic, boxes_qos->get_rmw_qos_profile());
+    sync_ptr_ = std::make_shared<ExactTimeSync>(ExactTimeSyncPolicy(10), image_sub_, boxes_sub_);
+    sync_ptr_->registerCallback(&BoxArray2dVisualizer::callback, this);
+
+    timer_->cancel();
+  }
 }
 
 std::optional<rclcpp::QoS> BoxArray2dVisualizer::getTopicQos(const std::string & query_topic)

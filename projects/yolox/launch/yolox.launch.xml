@@ -5,14 +5,23 @@
 
   <arg name="input/image" default="input/image"/>
   <arg name="output/boxes" default="output/boxes"/>
-
+  <arg name="use_raw" default="false"/>
   <arg name="build_only" default="false"/>
+
+  <arg name="visualize" default="true"/>
 
   <node pkg="mmros" exec="mmros_detection2d_exe" name="yolox" output="screen">
     <param from="$(var param_path)" allow_substs="true"/>
     <param name="onnx_path" value="$(var onnx_path)"/>
     <remap from="~/input/image" to="$(var input/image)"/>
     <remap from="~/output/boxes" to="$(var output/boxes)"/>
+    <param name="use_raw" value="$(var use_raw)"/>
     <param name="build_only" value="$(var build_only)"/>
+  </node>
+
+  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" output="screen" if="$(var visualize)">
+    <param name="use_raw" value="$(var use_raw)"/>
+    <remap from="~/input/image" to="$(var input/image)"/>
+    <remap from="~/input/boxes" to="$(var output/boxes)"/>
   </node>
 </launch>

@@ -5,7 +5,7 @@
 
   <arg name="input/image" default="input/image"/>
   <arg name="output/mask" default="output/mask"/>
-
+  <arg name="use_raw" default="false"/>
   <arg name="build_only" default="false"/>
 
   <node pkg="mmros" exec="mmros_semantic_segmentation2d_exe" name="mask2former" output="screen">
@@ -13,6 +13,7 @@
     <param name="onnx_path" value="$(var onnx_path)"/>
     <remap from="~/input/image" to="$(var input/image)"/>
     <remap from="~/output/mask" to="$(var output/mask)"/>
+    <param name="use_raw" value="$(var use_raw)"/>
     <param name="build_only" value="$(var build_only)"/>
   </node>
 </launch>

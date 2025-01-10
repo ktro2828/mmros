@@ -27,8 +27,8 @@ Following topics are published with the timestamp at the current ROS 2 simulatio
 
 First of all, please download NuImages dataset from [OFFICIAL WEBSITE](https://www.nuscenes.org/).
 
-Note that we assume that downloaded dataset is placed under `mmros_dataloader/data/`.
-If your dataset is placed in another directory, use `data_root:=<DATASET_ROOT>` option.
+Note that we assume that downloaded dataset is placed under `mmros_dataloader/data/` by default.
+If you want to specify an another directory, use `data_root:=<DATASET_ROOT>` option.
 
 Start running the NuImages publisher as follows:
 

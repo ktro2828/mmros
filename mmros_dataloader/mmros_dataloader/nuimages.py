@@ -20,6 +20,7 @@ from typing import Any, Sequence
 import cv2
 import numpy as np
 import rclpy
+from builtin_interfaces.msg import Time
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped
 from nuimages import NuImages
@@ -213,6 +214,7 @@ class NuImagesPublisher(Node):
         child_frame_id: str,
         translation: Sequence[float],
         rotation: Sequence[float],
+        stamp: Time | None = None,
         *,
         is_static: bool = False,
     ) -> None:
@@ -223,12 +225,14 @@ class NuImagesPublisher(Node):
             child_frame_id (str): Chile frame ID.
             translation (Sequence[float]): 3D translation (x, y, z).
             rotation (Sequence[float]): Quaternion (w, x, y, z).
+            stamp (Time | None, optional): Timestamp to publish.
+                If None, current time will be used. Defaults to None.
             is_static (bool, optional): Indicates whether this transform is static or not. Defaults to False.
         """
         t = TransformStamped()
 
         # header
-        t.header.stamp = self.get_clock().now().to_msg()
+        t.header.stamp = self.get_clock().now().to_msg() if stamp is None else stamp
         t.header.frame_id = frame_id
         t.child_frame_id = child_frame_id
 
@@ -255,20 +259,21 @@ class NuImagesPublisher(Node):
         sd_tokens = self._nuim.get_sample_content(self._current_sample_token)
         is_all_sample_data_end = False
         for sd_token in sd_tokens:
+            stamp = self.get_clock().now().to_msg()
             sample_data = self._nuim.get("sample_data", sd_token)
-            self._broadcast_ego_pose(sample_data["ego_pose_token"])
+            self._broadcast_ego_pose(sample_data["ego_pose_token"], stamp=stamp)
             sensor_record = self._nuim.shortcut("sample_data", "sensor", sd_token)
             channel: str = sensor_record["channel"]
             if "camera" == sensor_record["modality"]:
-                self._publish_camera(sample_data, channel)
+                self._publish_camera(sample_data, channel, stamp=stamp)
 
             if self._publish_annotation:
                 object_anns = [
                     ann for ann in self._nuim.object_ann if ann["sample_data_token"] == sd_token
                 ]
-                self._publish_boxes(object_anns, channel)
+                self._publish_boxes(object_anns, channel, stamp=stamp)
 
-                self._publish_mask(sample_data, channel)
+                self._publish_mask(sample_data, channel, stamp=stamp)
 
             is_all_sample_data_end &= sample_data["next"] == ""
 
@@ -282,11 +287,13 @@ class NuImagesPublisher(Node):
             self.destroy_node()
             rclpy.shutdown()
 
-    def _broadcast_ego_pose(self, ego_pose_token: str) -> None:
+    def _broadcast_ego_pose(self, ego_pose_token: str, stamp: Time | None = None) -> None:
         """Broadcast transform of the corresponding ego pose.
 
         Args:
             ego_pose_token (str): Token of ego pose.
+            stamp (Time | None, optional): Timestamp to publish.
+                If None, current time will be used. Defaults to None.
         """
         ego_record = self._nuim.get("ego_pose", ego_pose_token)
         self._broadcast_tf(
@@ -294,19 +301,24 @@ class NuImagesPublisher(Node):
             child_frame_id=self.EGO_FRAME_ID,
             translation=ego_record["translation"],
             rotation=ego_record["rotation"],
+            stamp=stamp,
             is_static=False,
         )
 
-    def _publish_camera(self, sample_data: dict[str, Any], channel: str) -> None:
+    def _publish_camera(
+        self, sample_data: dict[str, Any], channel: str, stamp: Time | None = None
+    ) -> None:
         """Publish camera record.
 
         Args:
             sample_data (dict[str, Any]): Sample data record of camera.
             channel (str): Channel name.
+            stamp (Time | None, optional): Timestamp to publish.
+                If None, current time will be used. Defaults to None.
         """
         header = Header()
         header.frame_id = channel
-        header.stamp = self.get_clock().now().to_msg()
+        header.stamp = self.get_clock().now().to_msg() if stamp is None else stamp
 
         # === image ===
         image_path = osp.join(self._data_root, sample_data["filename"])
@@ -364,7 +376,9 @@ class NuImagesPublisher(Node):
 
         self._cam_info_pubs[channel].publish(camera_info_msg)
 
-    def _publish_boxes(self, annotations: Sequence[dict[str, Any]], channel: str) -> None:
+    def _publish_boxes(
+        self, annotations: Sequence[dict[str, Any]], channel: str, stamp: Time | None = None
+    ) -> None:
         """Publish annotation boxes.
 
         Args:
@@ -372,7 +386,7 @@ class NuImagesPublisher(Node):
         """
         boxes_msg = BoxArray2d()
         boxes_msg.header.frame_id = channel
-        boxes_msg.header.stamp = self.get_clock().now().to_msg()
+        boxes_msg.header.stamp = self.get_clock().now().to_msg() if stamp is None else stamp
         for ann in annotations:
             box_msg = Box2d()
             # roi
@@ -407,7 +421,9 @@ class NuImagesPublisher(Node):
             label = "unknown"
         return self.LABEL_NAMES.index(label)
 
-    def _publish_mask(self, sample_data: dict[str, Any], channel: str) -> None:
+    def _publish_mask(
+        self, sample_data: dict[str, Any], channel: str, stamp: Time | None = None
+    ) -> None:
         """Publish annotation mask.
 
         Args:
@@ -421,7 +437,7 @@ class NuImagesPublisher(Node):
 
         header = Header()
         header.frame_id = channel
-        header.stamp = self.get_clock().now().to_msg()
+        header.stamp = self.get_clock().now().to_msg() if stamp is None else stamp
 
         # semantic segmentation
         semantic_labels = np.unique(semantic_mask)

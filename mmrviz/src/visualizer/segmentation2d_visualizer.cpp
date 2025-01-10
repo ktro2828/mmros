@@ -96,8 +96,9 @@ void Segmentation2dVisualizer::callback(
     return;
   }
 
+  const auto & lut = color_map_.getLookUpTable();
   cv::Mat color_mask;
-  cv::applyColorMap(in_mask_ptr->image, color_mask, cv::COLORMAP_HSV);
+  cv::applyColorMap(in_mask_ptr->image, color_mask, lut);
 
   cv::Mat overlay;
   cv::addWeighted(in_image_ptr->image, 0.5, color_mask, 0.5, 1.0, overlay);

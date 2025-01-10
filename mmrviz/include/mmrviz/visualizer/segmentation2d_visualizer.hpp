@@ -15,6 +15,8 @@
 #ifndef MMRVIZ__VISUALIZER__SEGMENTATION2D_VISUALIZER_HPP_
 #define MMRVIZ__VISUALIZER__SEGMENTATION2D_VISUALIZER_HPP_
 
+#include "mmrviz/color_map.hpp"
+
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
 #include <rclcpp/node.hpp>
@@ -57,6 +59,7 @@ private:
   std::shared_ptr<ExactTimeSync> sync_ptr_;
 
   image_transport::Publisher pub_;
+  ColorMap color_map_;
 };
 }  // namespace mmrviz::visualizer
 #endif  // MMRVIZ__VISUALIZER__SEGMENTATION2D_VISUALIZER_HPP_

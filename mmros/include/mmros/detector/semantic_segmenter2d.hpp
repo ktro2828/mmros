@@ -16,17 +16,25 @@
 #define MMROS__DETECTOR__SEMANTIC_SEGMENTER2D_HPP_
 
 #include "mmros/archetype/result.hpp"
+#include "mmros/tensorrt/cuda_unique_ptr.hpp"
 #include "mmros/tensorrt/tensorrt_common.hpp"
 #include "mmros/tensorrt/utility.hpp"
 
 #include <opencv2/core.hpp>
+#include <opencv2/core/mat.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <vector>
 
 namespace mmros
 {
+struct SemanticSegmenter2dConfig
+{
+  double score_threshold;
+};
+
 /**
  * @brief A class represents 2D semantic segmenter using TensorRT.
  */
@@ -52,7 +60,19 @@ public:
   Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
+  void initCudaPtr(size_t batch_size) noexcept;
+
+  cudaError_t preprocess(const std::vector<cv::Mat> & images) noexcept;
+
+  Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
+
   std::unique_ptr<TrtCommon> trt_common_;  //!< TrtCommon pointer.
+  cudaStream_t stream_;                    //!< CUDA stream.
+
+  std::vector<float> scales_;             //!< Image scales for each batch.
+  cuda::CudaUniquePtr<float[]> input_d_;  //!< Input image pointer on the device. [B, 3, H, W].
+
+  cuda::CudaUniquePtr<int[]> output_d_;  //!< Output mask pointer on the device. [B, 1, H, W].
 };
 }  // namespace mmros
 #endif  // MMROS__DETECTOR__SEMANTIC_SEGMENTER2D_HPP_

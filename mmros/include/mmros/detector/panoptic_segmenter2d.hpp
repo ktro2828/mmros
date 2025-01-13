@@ -17,11 +17,13 @@
 
 #include "mmros/archetype/box.hpp"
 #include "mmros/archetype/result.hpp"
+#include "mmros/tensorrt/cuda_unique_ptr.hpp"
 #include "mmros/tensorrt/tensorrt_common.hpp"
 #include "mmros/tensorrt/utility.hpp"
 
 #include <opencv2/core/mat.hpp>
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -29,6 +31,11 @@
 
 namespace mmros
 {
+struct PanopticSegmenter2dConfig
+{
+  double score_threshold;
+};
+
 /**
  * @brief A class represents 2D panoptic segmenter using TensorRT.
  */
@@ -41,9 +48,11 @@ public:
   /**
    * @brief
    *
-   * @param config TensorRT common config.
+   * @param trt_config TensorRT common config.
+   * @param detector_config Detector config.
    */
-  explicit PanopticSegmenter2D(const TrtCommonConfig & config);
+  explicit PanopticSegmenter2D(
+    const TrtCommonConfig & trt_config, const PanopticSegmenter2dConfig & detector_config);
 
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
@@ -54,7 +63,24 @@ public:
   Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
-  std::unique_ptr<TrtCommon> trt_common_;  //!< TrtCommon pointer.
+  void initCudaPtr(size_t batch_size) noexcept;
+
+  cudaError_t preprocess(const std::vector<cv::Mat> & images) noexcept;
+
+  Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
+
+  std::unique_ptr<TrtCommon> trt_common_;                       //!< TrtCommon pointer.
+  std::unique_ptr<PanopticSegmenter2dConfig> detector_config_;  //!< Detector config.
+  cudaStream_t stream_;                                         //!< CUDA stream.
+
+  std::vector<float> scales_;             //!< Image scales for each batch.
+  cuda::CudaUniquePtr<float[]> input_d_;  //!< Input image pointer on the device. [B, 3, H, W].
+
+  cuda::CudaUniquePtr<float[]> out_boxes_d_;  //!< Output boxes pointer on the device [B, N, 5].
+  cuda::CudaUniquePtr<int[]> out_labels_d_;   //!< Output labels pointer on the device. [B, N].
+  cuda::CudaUniquePtr<float[]> out_masks_d_;  //!< Output masks pointer on the device. [B, N, M, M].
+  cuda::CudaUniquePtr<float[]>
+    out_segments_d_;  //!< Output segments pointer on the device. [B, C, H, W].
 };
 }  // namespace mmros
 #endif  // MMROS__DETECTOR__PANOPTIC_SEGMENTER2D_HPP_

@@ -37,6 +37,7 @@ struct Detector2dConfig
 {
   double score_threshold;
 };
+
 /**
  * @brief A class represents 2D detector using TensorRT.
  */

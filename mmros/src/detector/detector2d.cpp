@@ -113,7 +113,7 @@ void Detector2D::initCudaPtr(size_t batch_size) noexcept
     return std::accumulate(dims.d + 1, dims.d + dims.nbDims, 1, std::multiplies<int>());
   };
 
-  auto in_dims = trt_common_->getTensorShape(0);
+  auto in_dims = trt_common_->getInputDims(0);
   const auto in_size = get_dim_size(in_dims);
   input_d_ = cuda::make_unique<float[]>(in_size * batch_size);
 

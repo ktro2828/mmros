@@ -14,6 +14,7 @@
 
 #include "mmros/node/panoptic_segmentation2d_node.hpp"
 
+#include "mmros/detector/panoptic_segmenter2d.hpp"
 #include "mmros/node/semantic_segmentation2d_node.hpp"
 
 #include <image_transport/image_transport.hpp>
@@ -36,8 +37,11 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
 {
   {
     auto onnx_path = declare_parameter<std::string>("onnx_path");
-    TrtCommonConfig config(onnx_path);
-    detector_ = std::make_unique<PanopticSegmenter2D>(config);
+    TrtCommonConfig trt_config(onnx_path);
+
+    auto score_threshold = declare_parameter<double>("detector_config.score_threshold");
+    PanopticSegmenter2dConfig detector_config{score_threshold};
+    detector_ = std::make_unique<PanopticSegmenter2D>(trt_config, detector_config);
   }
 
   {

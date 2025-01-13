@@ -36,12 +36,22 @@ SemanticSegmenter2D::SemanticSegmenter2D(const TrtCommonConfig & config)
   const auto in_height = network_input_dims.d[2];
   const auto in_width = network_input_dims.d[3];
 
-  // TODO(ktro2828): Check batch size for dynamic shape inference
-  auto profile_dims = std::vector<ProfileDims>(
-    {{0,
-      {4, batch_size, in_channel, in_height, in_width},
-      {4, batch_size, in_channel, in_height, in_width},
-      {4, batch_size, in_channel, in_height, in_width}}});
+  std::vector<ProfileDims> profile_dims;
+  if (batch_size == -1) {
+    // dynamic shape inference
+    profile_dims = {
+      {0,
+       {4, 1, in_channel, in_height, in_width},
+       {4, 5, in_channel, in_height, in_width},
+       {4, 10, in_channel, in_height, in_width}}};
+  } else {
+    // static shape inference
+    profile_dims = {
+      {0,
+       {4, batch_size, in_channel, in_height, in_width},
+       {4, batch_size, in_channel, in_height, in_width},
+       {4, batch_size, in_channel, in_height, in_width}}};
+  }
 
   auto profile_dims_ptr = std::make_unique<std::vector<ProfileDims>>(profile_dims);
 

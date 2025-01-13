@@ -14,7 +14,11 @@ N/A
 
 ## Custom TensorRT Plugins
 
-N/A
+|           Name           | Version |
+| :----------------------: | :-----: |
+|       `GatherTopk`       |    1    |
+|     `TRTBatchedNMS`      |    1    |
+| `MMCVMultiLevelRoiAlign` |    1    |
 
 ## Inputs & Outputs in ROS 2
 

@@ -14,6 +14,8 @@
 
 #include "mmros/node/semantic_segmentation2d_node.hpp"
 
+#include "mmros/detector/semantic_segmenter2d.hpp"
+
 #include <image_transport/image_transport.hpp>
 #include <opencv2/core/mat.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -33,8 +35,12 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
 {
   {
     auto onnx_path = declare_parameter<std::string>("onnx_path");
-    TrtCommonConfig config(onnx_path);
-    detector_ = std::make_unique<SemanticSegmenter2D>(config);
+    TrtCommonConfig trt_config(onnx_path);
+
+    auto mean = declare_parameter<std::vector<double>>("detector_config.mean");
+    auto std = declare_parameter<std::vector<double>>("detector_config.std");
+    SemanticSegmenter2dConfig detector_config{mean, std};
+    detector_ = std::make_unique<SemanticSegmenter2D>(trt_config, detector_config);
   }
 
   {

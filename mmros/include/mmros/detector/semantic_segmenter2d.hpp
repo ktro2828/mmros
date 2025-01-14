@@ -32,7 +32,8 @@ namespace mmros
 {
 struct SemanticSegmenter2dConfig
 {
-  double score_threshold;
+  std::vector<double> mean;
+  std::vector<double> std;
 };
 
 /**
@@ -47,9 +48,11 @@ public:
   /**
    * @brief Construct a new SemanticSegmenter2D object
    *
-   * @param config TensorRT common config.
+   * @param trt_config TensorRT common config.
+   * @param detector_config Detector config.
    */
-  explicit SemanticSegmenter2D(const TrtCommonConfig & config);
+  explicit SemanticSegmenter2D(
+    const TrtCommonConfig & trt_config, const SemanticSegmenter2dConfig & detector_config);
 
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
@@ -66,8 +69,9 @@ private:
 
   Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
 
-  std::unique_ptr<TrtCommon> trt_common_;  //!< TrtCommon pointer.
-  cudaStream_t stream_;                    //!< CUDA stream.
+  std::unique_ptr<TrtCommon> trt_common_;                       //!< TrtCommon pointer.
+  std::unique_ptr<SemanticSegmenter2dConfig> detector_config_;  //!< Detector config.
+  cudaStream_t stream_;                                         //!< CUDA stream.
 
   std::vector<float> scales_;             //!< Image scales for each batch.
   cuda::CudaUniquePtr<float[]> input_d_;  //!< Input image pointer on the device. [B, 3, H, W].

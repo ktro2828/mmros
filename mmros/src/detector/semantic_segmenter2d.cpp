@@ -36,9 +36,11 @@ namespace mmros
 {
 using outputs_type = SemanticSegmenter2D::outputs_type;
 
-SemanticSegmenter2D::SemanticSegmenter2D(const TrtCommonConfig & config)
+SemanticSegmenter2D::SemanticSegmenter2D(
+  const TrtCommonConfig & trt_config, const SemanticSegmenter2dConfig & detector_config)
 {
-  trt_common_ = std::make_unique<TrtCommon>(config);
+  trt_common_ = std::make_unique<TrtCommon>(trt_config);
+  detector_config_ = std::make_unique<SemanticSegmenter2dConfig>(detector_config);
 
   const auto network_input_dims = trt_common_->getTensorShape(0);
   const auto batch_size = network_input_dims.d[0];
@@ -158,9 +160,19 @@ cudaError_t SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
     return err;
   }
 
+  auto mean_d = cuda::make_unique<float[]>(3);
+  ::cudaMemcpyAsync(
+    mean_d.get(), reinterpret_cast<float *>(detector_config_->mean.data()), 3 * sizeof(float),
+    cudaMemcpyHostToDevice, stream_);
+
+  auto std_d = cuda::make_unique<float[]>(3);
+  ::cudaMemcpyAsync(
+    std_d.get(), reinterpret_cast<float *>(detector_config_->std.data()), 3 * sizeof(float),
+    cudaMemcpyHostToDevice, stream_);
+
   preprocess::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
-    3, batch_size, 1.0, stream_);
+    3, batch_size, mean_d.get(), std_d.get(), stream_);
 
   return cudaGetLastError();
 }
@@ -187,13 +199,15 @@ Result<outputs_type> SemanticSegmenter2D::postprocess(const std::vector<cv::Mat>
     return Err<outputs_type>(InferenceError_t::CUDA, os.str());
   }
 
+  cudaStreamSynchronize(stream_);
+
   outputs_type output;
   output.reserve(batch_size);
   for (size_t i = 0; i < batch_size; ++i) {
     output_type mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
     std::memcpy(
       mask.data, out_mask.get() + i * output_height * output_width,
-      sizeof(unsigned char) * 1 * output_height * output_width);
+      sizeof(unsigned char) * num_class * output_height * output_width);
     output.emplace_back(mask);
   }
 

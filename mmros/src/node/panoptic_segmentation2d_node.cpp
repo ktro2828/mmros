@@ -39,8 +39,10 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
     auto onnx_path = declare_parameter<std::string>("onnx_path");
     TrtCommonConfig trt_config(onnx_path);
 
+    auto mean = declare_parameter<std::vector<double>>("detector_config.mean");
+    auto std = declare_parameter<std::vector<double>>("detector_config.std");
     auto score_threshold = declare_parameter<double>("detector_config.score_threshold");
-    PanopticSegmenter2dConfig detector_config{score_threshold};
+    PanopticSegmenter2dConfig detector_config{mean, std, score_threshold};
     detector_ = std::make_unique<PanopticSegmenter2D>(trt_config, detector_config);
   }
 

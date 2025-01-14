@@ -33,6 +33,8 @@ namespace mmros
 {
 struct PanopticSegmenter2dConfig
 {
+  std::vector<double> mean;
+  std::vector<double> std;
   double score_threshold;
 };
 

@@ -35,6 +35,8 @@ namespace mmros
 {
 struct Detector2dConfig
 {
+  std::vector<double> mean;
+  std::vector<double> std;
   double score_threshold;
 };
 

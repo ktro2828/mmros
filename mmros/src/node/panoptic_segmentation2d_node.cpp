@@ -100,9 +100,6 @@ std::optional<rclcpp::QoS> PanopticSegmentation2dNode::getTopicQos(const std::st
 
 void PanopticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
-  // TODO(ktro2828): Implementation
-  RCLCPP_INFO(get_logger(), "Subscribe input!!");
-
   cv_bridge::CvImagePtr in_image_ptr;
   try {
     in_image_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);

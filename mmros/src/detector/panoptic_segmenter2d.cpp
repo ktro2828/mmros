@@ -72,8 +72,40 @@ PanopticSegmenter2D::PanopticSegmenter2D(
 
 Result<outputs_type> PanopticSegmenter2D::doInference(const std::vector<cv::Mat> & images) noexcept
 {
-  // TODO(ktro2828): Implementation
-  return Err<outputs_type>(InferenceError_t::UNKNOWN);
+  if (images.empty()) {
+    return Err<outputs_type>(InferenceError_t::UNKNOWN, "No image.");
+  }
+
+  // 1. Init CUDA pointers
+  initCudaPtr(images.size());
+
+  // 2. Execute preprocess
+  if (const auto err = preprocess(images); err != ::cudaSuccess) {
+    std::ostringstream os;
+    os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
+       << ::cudaGetErrorString(err);
+    return Err<outputs_type>(InferenceError_t::CUDA, os.str());
+  }
+
+  // 3. Set tensors
+  std::vector<void *> buffers{
+    input_d_.get(), out_boxes_d_.get(), out_labels_d_.get(), out_masks_d_.get(),
+    out_segments_d_.get()};
+  if (!trt_common_->setTensorsAddresses(buffers)) {
+    std::ostringstream os;
+    os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
+    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+  }
+
+  // 4. Execute inference
+  if (!trt_common_->enqueueV3(stream_)) {
+    std::ostringstream os;
+    os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
+    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+  }
+
+  // 5. Execute postprocess
+  return postprocess(images);
 }
 
 void PanopticSegmenter2D::initCudaPtr(size_t batch_size) noexcept
@@ -188,17 +220,24 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
   }
 
   const auto out_segments_dims = trt_common_->getOutputDims(3);
-  const auto num_class = static_cast<size_t>(out_segments_dims.d[1]);
+  const auto num_segment = static_cast<size_t>(out_segments_dims.d[1]);
   const auto output_height = static_cast<size_t>(out_segments_dims.d[2]);
   const auto output_width = static_cast<size_t>(out_segments_dims.d[3]);
 
+  auto argmax_d =
+    cuda::make_unique<unsigned char[]>(batch_size * num_segment * output_height * output_width);
+
+  preprocess::argmax_gpu(
+    argmax_d.get(), out_segments_d_.get(), output_width, output_height, output_width, output_height,
+    num_segment, batch_size, stream_);
+
   auto out_segments =
-    std::make_unique<float[]>(batch_size * num_class * output_height * output_width);
+    std::make_unique<unsigned char[]>(batch_size * num_segment * output_height * output_width);
 
   // copy segments
   if (const auto err = ::cudaMemcpyAsync(
-        out_segments.get(), out_segments_d_.get(),
-        sizeof(float) * batch_size * num_class * output_height * output_width,
+        out_segments.get(), argmax_d.get(),
+        sizeof(unsigned char) * batch_size * 1 * output_height * output_width,
         ::cudaMemcpyDeviceToHost, stream_);
       err != ::cudaSuccess) {
     std::ostringstream os;
@@ -228,7 +267,9 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
       boxes.emplace_back(xmin, ymin, xmax, ymax, score, label);
     }
     cv::Mat mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
-    // TODO(ktro2828): postprocess of output segments mask (B, N, H, W)
+    std::memcpy(
+      mask.data, out_segments.get() + i * output_height * output_width,
+      sizeof(unsigned char) * 1 * output_height * output_width);
     output.emplace_back(boxes, mask);
   }
 

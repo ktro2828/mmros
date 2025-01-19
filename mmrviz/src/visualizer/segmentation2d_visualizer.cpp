@@ -101,13 +101,10 @@ void Segmentation2dVisualizer::callback(
   cv::Mat color_mask;
   cv::applyColorMap(in_mask_ptr->image, color_mask, lut);
 
-  // resize mask align to the source image if the size is different
-  if (color_mask.size != in_image_ptr->image.size) {
-    cv::resize(color_mask, color_mask, {in_image_ptr->image.cols, in_image_ptr->image.rows});
-  }
-
+  // align source image size to mask one
   cv::Mat overlay;
-  cv::addWeighted(in_image_ptr->image, 0.5, color_mask, 0.5, 1.0, overlay);
+  cv::resize(in_image_ptr->image, overlay, {color_mask.cols, color_mask.rows});
+  cv::addWeighted(overlay, 0.5, color_mask, 0.5, 1.0, overlay);
 
   cv_bridge::CvImage out_image_msg;
   out_image_msg.header = image_msg->header;

@@ -19,6 +19,8 @@
 
 namespace mmros
 {
+enum BoxFormat2D { XYXY = 0, XYWH = 1 };
+
 struct Box2D
 {
   float xmin;

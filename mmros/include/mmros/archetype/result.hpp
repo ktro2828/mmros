@@ -22,11 +22,11 @@
 
 namespace mmros
 {
-
 enum InferenceError_t {
-  TENSORRT,  //!< TensorRT related error.
-  CUDA,      //!< CUDA related error.
-  UNKNOWN,   //!< Unknown error.
+  TENSORRT,       //!< TensorRT related error.
+  CUDA,           //!< CUDA related error.
+  INVALID_VALUE,  //!< Invalid value error.
+  UNKNOWN,        //!< Unknown error.
 };
 
 struct InferenceError

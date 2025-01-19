@@ -10,21 +10,23 @@
 
   <arg name="visualize" default="true"/>
 
-  <node pkg="mmros" exec="mmros_detection2d_exe" name="yolox" output="screen">
-    <param from="$(var param_path)" allow_substs="true"/>
-    <param name="onnx_path" value="$(var onnx_path)"/>
-    <remap from="~/input/image" to="$(var input/image)"/>
-    <remap from="~/output/boxes" to="$(var output/boxes)"/>
-    <param name="use_raw" value="$(var use_raw)"/>
-    <param name="build_only" value="$(var build_only)"/>
-  </node>
-
-  <group if="$(var visualize)">
+  <group>
     <push-ros-namespace namespace="yolox"/>
-    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" output="screen">
-      <param name="use_raw" value="$(var use_raw)"/>
+    <node pkg="mmros" exec="mmros_detection2d_exe" name="detector" output="screen">
+      <param from="$(var param_path)" allow_substs="true"/>
+      <param name="onnx_path" value="$(var onnx_path)"/>
       <remap from="~/input/image" to="$(var input/image)"/>
-      <remap from="~/input/boxes" to="$(var output/boxes)"/>
+      <remap from="~/output/boxes" to="$(var output/boxes)"/>
+      <param name="use_raw" value="$(var use_raw)"/>
+      <param name="build_only" value="$(var build_only)"/>
     </node>
+
+    <group if="$(var visualize)">
+      <node pkg="mmrviz" exec="box_array2d_visualizer_exe" output="screen">
+        <param name="use_raw" value="$(var use_raw)"/>
+        <remap from="~/input/image" to="$(var input/image)"/>
+        <remap from="~/input/boxes" to="$(var output/boxes)"/>
+      </node>
+    </group>
   </group>
 </launch>

@@ -160,15 +160,16 @@ cudaError_t SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
     return err;
   }
 
-  auto mean_d = cuda::make_unique<float[]>(3);
-  ::cudaMemcpyAsync(
-    mean_d.get(), reinterpret_cast<float *>(detector_config_->mean.data()), 3 * sizeof(float),
-    cudaMemcpyHostToDevice, stream_);
+  // TODO(ktro2828): Refactoring not to load mean/std array every loop
+  std::vector<float> mean_h(detector_config_->mean.begin(), detector_config_->mean.end());
+  std::vector<float> std_h(detector_config_->std.begin(), detector_config_->std.end());
+  auto mean_d = cuda::make_unique<float[]>(mean_h.size());
+  auto std_d = cuda::make_unique<float[]>(std_h.size());
 
-  auto std_d = cuda::make_unique<float[]>(3);
   ::cudaMemcpyAsync(
-    std_d.get(), reinterpret_cast<float *>(detector_config_->std.data()), 3 * sizeof(float),
-    cudaMemcpyHostToDevice, stream_);
+    mean_d.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_);
+  ::cudaMemcpyAsync(
+    std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_);
 
   preprocess::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,

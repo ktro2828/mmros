@@ -183,16 +183,14 @@ Result<outputs_type> SemanticSegmenter2D::postprocess(const std::vector<cv::Mat>
   const auto batch_size = images.size();
 
   const auto out_dims = trt_common_->getOutputDims(0);
-  const auto num_class = static_cast<size_t>(out_dims.d[1]);
   const auto output_height = static_cast<size_t>(out_dims.d[2]);
   const auto output_width = static_cast<size_t>(out_dims.d[3]);
 
-  auto out_mask = std::make_unique<int[]>(batch_size * num_class * output_width * output_height);
-
+  std::vector<int> output_h(batch_size * 1 * output_width * output_height);
   if (const auto err = ::cudaMemcpyAsync(
-        out_mask.get(), output_d_.get(),
-        sizeof(int) * batch_size * num_class * output_width * output_height,
-        ::cudaMemcpyDeviceToHost, stream_);
+        output_h.data(), output_d_.get(),
+        sizeof(int) * batch_size * 1 * output_width * output_height, ::cudaMemcpyDeviceToHost,
+        stream_);
       err != ::cudaSuccess) {
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
@@ -204,11 +202,14 @@ Result<outputs_type> SemanticSegmenter2D::postprocess(const std::vector<cv::Mat>
 
   outputs_type output;
   output.reserve(batch_size);
+
+  // NOTE: casting int[] to uchar[] first
+  std::vector<unsigned char> out_mask(output_h.begin(), output_h.end());
   for (size_t i = 0; i < batch_size; ++i) {
     output_type mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
     std::memcpy(
-      mask.data, out_mask.get() + i * output_height * output_width,
-      sizeof(unsigned char) * num_class * output_height * output_width);
+      mask.data, out_mask.data() + i * output_height * output_width,
+      sizeof(unsigned char) * 1 * output_height * output_width);
     output.emplace_back(mask);
   }
 

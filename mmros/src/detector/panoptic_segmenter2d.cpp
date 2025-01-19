@@ -195,12 +195,11 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
   const auto out_boxes_dims = trt_common_->getOutputDims(0);
   const auto num_detection = static_cast<size_t>(out_boxes_dims.d[1]);
 
-  auto out_boxes = std::make_unique<float[]>(batch_size * 5 * num_detection);
-  auto out_labels = std::make_unique<int[]>(batch_size * num_detection);
-
+  std::vector<float> out_boxes(batch_size * 5 * num_detection);
+  std::vector<int> out_labels(batch_size * num_detection);
   // copy boxes
   if (const auto err = ::cudaMemcpyAsync(
-        out_boxes.get(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
+        out_boxes.data(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
         ::cudaMemcpyDeviceToHost, stream_);
       err != ::cudaSuccess) {
     std::ostringstream os;
@@ -211,7 +210,7 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
 
   // copy labels
   if (const auto err = ::cudaMemcpyAsync(
-        out_labels.get(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
+        out_labels.data(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
         ::cudaMemcpyDeviceToHost, stream_);
       err != ::cudaSuccess) {
     std::ostringstream os;
@@ -232,12 +231,10 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
     argmax_d.get(), out_segments_d_.get(), output_width, output_height, output_width, output_height,
     num_segment, batch_size, stream_);
 
-  auto out_segments =
-    std::make_unique<unsigned char[]>(batch_size * num_segment * output_height * output_width);
-
+  std::vector<unsigned char> out_segments(batch_size * num_segment * output_height * output_width);
   // copy segments
   if (const auto err = ::cudaMemcpyAsync(
-        out_segments.get(), argmax_d.get(),
+        out_segments.data(), argmax_d.get(),
         sizeof(unsigned char) * batch_size * 1 * output_height * output_width,
         ::cudaMemcpyDeviceToHost, stream_);
       err != ::cudaSuccess) {
@@ -252,6 +249,7 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
   outputs_type output;
   output.reserve(batch_size);
   for (size_t i = 0; i < batch_size; ++i) {
+    // Output boxes
     Boxes2D boxes;
     boxes.reserve(num_detection);
     const auto & scale = scales_.at(i);
@@ -267,9 +265,10 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
       const auto label = out_labels[i * num_detection + j];
       boxes.emplace_back(xmin, ymin, xmax, ymax, score, label);
     }
+    // Output mask
     cv::Mat mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
     std::memcpy(
-      mask.data, out_segments.get() + i * output_height * output_width,
+      mask.data, out_segments.data() + i * output_height * output_width,
       sizeof(unsigned char) * 1 * output_height * output_width);
     output.emplace_back(boxes, mask);
   }

@@ -188,11 +188,10 @@ Result<outputs_type> Detector2D::postprocess(const std::vector<cv::Mat> & images
   const auto out_dims = trt_common_->getOutputDims(0);
   const auto num_detection = static_cast<size_t>(out_dims.d[1]);
 
-  auto out_boxes = std::make_unique<float[]>(batch_size * 5 * num_detection);
-  auto out_labels = std::make_unique<int[]>(batch_size * num_detection);
-
+  std::vector<float> out_boxes(batch_size * 5 * num_detection);
+  std::vector<int> out_labels(batch_size * num_detection);
   if (const auto err = ::cudaMemcpyAsync(
-        out_boxes.get(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
+        out_boxes.data(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
         ::cudaMemcpyDeviceToHost, stream_);
       err != ::cudaSuccess) {
     std::ostringstream os;
@@ -200,9 +199,8 @@ Result<outputs_type> Detector2D::postprocess(const std::vector<cv::Mat> & images
        << ::cudaGetErrorString(err);
     return Err<outputs_type>(InferenceError_t::CUDA, os.str());
   }
-
   if (const auto err = ::cudaMemcpyAsync(
-        out_labels.get(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
+        out_labels.data(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
         ::cudaMemcpyDeviceToHost, stream_);
       err != ::cudaSuccess) {
     std::ostringstream os;

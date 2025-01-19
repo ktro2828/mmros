@@ -2,6 +2,8 @@
 
 ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
 
+![SAMPLE](./docs/assets/detection2d.gif)
+
 ## Requirements
 
 - Ubuntu 22.04
@@ -34,7 +36,7 @@ ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to <PROJECT_NAME>
    ```
 
-## Supported Models
+## Sample Projects
 
 | Task                  | Modality | Model                                                       |
 | --------------------- | -------- | ----------------------------------------------------------- |

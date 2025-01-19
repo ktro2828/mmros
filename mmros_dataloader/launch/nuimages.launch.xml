@@ -14,98 +14,101 @@
   </node>
 
   <!-- visualize bounding boxes -->
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_front" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT/image"/>
-    <remap from="~/input/boxes" to="/nuimages/CAM_FRONT/annotation/boxes"/>
-  </node>
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_front_left" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT_LEFT/image"/>
-    <remap from="~/input/boxes" to="/nuimages/CAM_FRONT_LEFT/annotation/boxes"/>
-  </node>
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_front_right" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT_RIGHT/image"/>
-    <remap from="~/input/boxes" to="/nuimages/CAM_FRONT_RIGHT/annotation/boxes"/>
-  </node>
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_back" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK/image"/>
-    <remap from="~/input/boxes" to="/nuimages/CAM_BACK/annotation/boxes"/>
-  </node>
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_back_right" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK_RIGHT/image"/>
-    <remap from="~/input/boxes" to="/nuimages/CAM_BACK_RIGHT/annotation/boxes"/>
-  </node>
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_back_left" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK_LEFT/image"/>
-    <remap from="~/input/boxes" to="/nuimages/CAM_BACK_LEFT/annotation/boxes"/>
-  </node>
+  <group if="$(var publish_annotation)">
+    <push-ros-namespace namespace="nuimages"/>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_front" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT/image"/>
+      <remap from="~/input/boxes" to="/nuimages/CAM_FRONT/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_front_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT_LEFT/image"/>
+      <remap from="~/input/boxes" to="/nuimages/CAM_FRONT_LEFT/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_front_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT_RIGHT/image"/>
+      <remap from="~/input/boxes" to="/nuimages/CAM_FRONT_RIGHT/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_back" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK/image"/>
+      <remap from="~/input/boxes" to="/nuimages/CAM_BACK/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_back_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK_RIGHT/image"/>
+      <remap from="~/input/boxes" to="/nuimages/CAM_BACK_RIGHT/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" name="box_array2d_cam_back_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK_LEFT/image"/>
+      <remap from="~/input/boxes" to="/nuimages/CAM_BACK_LEFT/annotation/boxes"/>
+    </node>
 
-  <!-- visualize semantic segmentation masks -->
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_front" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_FRONT/annotation/semantic_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_front_left" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT_LEFT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_FRONT_LEFT/annotation/semantic_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_front_right" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT_RIGHT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_FRONT_RIGHT/annotation/semantic_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_back" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_BACK/annotation/semantic_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_back_right" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK_RIGHT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_BACK_RIGHT/annotation/semantic_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_back_left" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK_LEFT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_BACK_LEFT/annotation/semantic_mask"/>
-  </node>
+    <!-- visualize semantic segmentation masks -->
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_front" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_FRONT/annotation/semantic_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_front_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT_LEFT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_FRONT_LEFT/annotation/semantic_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_front_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT_RIGHT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_FRONT_RIGHT/annotation/semantic_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_back" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_BACK/annotation/semantic_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_back_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK_RIGHT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_BACK_RIGHT/annotation/semantic_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="semantic2d_cam_back_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK_LEFT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_BACK_LEFT/annotation/semantic_mask"/>
+    </node>
 
-  <!-- visualize instance segmentation masks -->
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_front" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_FRONT/annotation/instance_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_front_left" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT_LEFT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_FRONT_LEFT/annotation/instance_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_front_right" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_FRONT_RIGHT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_FRONT_RIGHT/annotation/instance_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_back" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_BACK/annotation/instance_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_back_right" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK_RIGHT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_BACK_RIGHT/annotation/instance_mask"/>
-  </node>
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_back_left" output="screen">
-    <param name="use_raw" value="false"/>
-    <remap from="~/input/image" to="/nuimages/CAM_BACK_LEFT/image"/>
-    <remap from="~/input/mask" to="/nuimages/CAM_BACK_LEFT/annotation/instance_mask"/>
-  </node>
+    <!-- visualize instance segmentation masks -->
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_front" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_FRONT/annotation/instance_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_front_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT_LEFT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_FRONT_LEFT/annotation/instance_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_front_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_FRONT_RIGHT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_FRONT_RIGHT/annotation/instance_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_back" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_BACK/annotation/instance_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_back_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK_RIGHT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_BACK_RIGHT/annotation/instance_mask"/>
+    </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" name="instance2d_cam_back_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuimages/CAM_BACK_LEFT/image"/>
+      <remap from="~/input/mask" to="/nuimages/CAM_BACK_LEFT/annotation/instance_mask"/>
+    </node>
+  </group>
 </launch>

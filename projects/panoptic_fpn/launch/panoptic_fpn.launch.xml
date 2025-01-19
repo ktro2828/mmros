@@ -21,15 +21,18 @@
     <param name="build_only" value="$(var build_only)"/>
   </node>
 
-  <node pkg="mmrviz" exec="box_array2d_visualizer_exe" output="screen" if="$(var visualize)">
-    <param name="use_raw" value="$(var use_raw)"/>
-    <remap from="~/input/image" to="$(var input/image)"/>
-    <remap from="~/input/boxes" to="$(var output/boxes)"/>
-  </node>
+  <group if="$(var visualize)">
+    <push-ros-namespace namespace="panoptic_fpn"/>
+    <node pkg="mmrviz" exec="box_array2d_visualizer_exe" output="screen">
+      <param name="use_raw" value="$(var use_raw)"/>
+      <remap from="~/input/image" to="$(var input/image)"/>
+      <remap from="~/input/boxes" to="$(var output/boxes)"/>
+    </node>
 
-  <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" output="screen" if="$(var visualize)">
-    <param name="use_raw" value="$(var use_raw)"/>
-    <remap from="~/input/image" to="$(var input/image)"/>
-    <remap from="~/input/mask" to="$(var output/mask)"/>
-  </node>
+    <node pkg="mmrviz" exec="segmentation2d_visualizer_exe" output="screen">
+      <param name="use_raw" value="$(var use_raw)"/>
+      <remap from="~/input/image" to="$(var input/image)"/>
+      <remap from="~/input/mask" to="$(var output/mask)"/>
+    </node>
+  </group>
 </launch>

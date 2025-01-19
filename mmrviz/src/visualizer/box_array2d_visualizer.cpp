@@ -100,7 +100,6 @@ void BoxArray2dVisualizer::callback(
   }
 
   auto & image = in_image_ptr->image;
-  size_t count = 0;
   for (const auto & box : boxes_msg->boxes) {
     const auto xmin = std::max(0, static_cast<int>(box.x_offset));
     const auto ymin = std::max(0, static_cast<int>(box.y_offset));
@@ -121,16 +120,13 @@ void BoxArray2dVisualizer::callback(
       color,
       1,  // thickness
       cv::LINE_AA);
-    ++count;
   }
 
-  if (count > 0) {
-    cv_bridge::CvImage out_image_msg;
-    out_image_msg.header = image_msg->header;
-    out_image_msg.image = image;
-    out_image_msg.encoding = sensor_msgs::image_encodings::RGB8;
-    pub_.publish(out_image_msg.toImageMsg());
-  }
+  cv_bridge::CvImage out_image_msg;
+  out_image_msg.header = image_msg->header;
+  out_image_msg.image = image;
+  out_image_msg.encoding = sensor_msgs::image_encodings::RGB8;
+  pub_.publish(out_image_msg.toImageMsg());
 }
 }  // namespace mmrviz::visualizer
 

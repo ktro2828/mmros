@@ -10,6 +10,9 @@ rosidl_generate_interfaces(
   "msg/Box3d.msg"
   "msg/BoxArray2d.msg"
   "msg/BoxArray3d.msg"
+  "msg/Edge.msg"
+  "msg/Skeleton.msg"
+  "msg/SkeletonArray.msg"
   DEPENDENCIES
   geometry_msgs
   std_msgs)

@@ -1,6 +1,6 @@
 # New Project
 
-For the details of the model configuration and results, please refer to [here]<RINK-TO-OPNEMMLAB-PROJECT>.
+For the details of the model configuration and results, please refer to [here]<LINK-TO-OpenMMLab-PROJECT>.
 
 ## ONNX Models
 

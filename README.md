@@ -28,7 +28,7 @@ ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
    ```
 
-5. (OPTIONAL) Build Only Specific Model
+5. (OPTIONAL) Build Only Specific Project
 
    Note that `<PROJECT_NAME>` represents the name of the particular package under the `projects` directory.
 

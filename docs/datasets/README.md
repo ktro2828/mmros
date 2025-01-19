@@ -1,4 +1,4 @@
-# Publishing DataSet
+# MMROS DataLoader
 
 `mmros_dataloader` features publishing various open dataset in ROS 2 topic space.
 

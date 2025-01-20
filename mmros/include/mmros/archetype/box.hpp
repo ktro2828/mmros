@@ -19,6 +19,14 @@
 
 namespace mmros
 {
+/**
+ * @brief An enum representing 2D box format.
+ */
+enum class BoxFormat2D {
+  XYXY = 0,  //!< (xmin, ymin, xmax, ymax) order.
+  XYWH = 1   //!< (cx, cy, width, height) order.
+};
+
 struct Box2D
 {
   float xmin;

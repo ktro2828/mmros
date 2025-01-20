@@ -28,6 +28,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -43,7 +44,17 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
     auto mean = declare_parameter<std::vector<double>>("detector_config.mean");
     auto std = declare_parameter<std::vector<double>>("detector_config.std");
     auto score_threshold = declare_parameter<float>("detector_config.score_threshold");
-    Detector2dConfig detector_config{mean, std, score_threshold};
+    auto box_format_str = declare_parameter<std::string>("detector_config.box_format");
+    BoxFormat2D box_format;
+    if (box_format_str == "xyxy") {
+      box_format = BoxFormat2D::XYXY;
+    } else if (box_format_str == "xywh") {
+      box_format = BoxFormat2D::XYWH;
+    } else {
+      throw std::invalid_argument(
+        "Expected box format is (xyxy, or xywh), but got: " + box_format_str);
+    }
+    Detector2dConfig detector_config{mean, std, box_format, score_threshold};
     detector_ = std::make_unique<Detector2D>(trt_config, detector_config);
   }
 

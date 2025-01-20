@@ -16,6 +16,7 @@
 
 #include <image_transport/image_transport.hpp>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/operations.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
 #include <rclcpp/create_timer.hpp>
@@ -32,8 +33,10 @@
 #include <tf2/convert.h>
 #include <tf2/exceptions.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -121,7 +124,7 @@ std::vector<cv::Point2d> projectBoxCorners(
 
   std::vector<cv::Point2d> corners2d;
   for (const auto & xyz : corners3d) {
-    if (xyz.z < 0) {
+    if (xyz.z <= 0) {
       continue;
     }
     auto xy = camera_model.project3dToPixel(xyz);
@@ -135,13 +138,18 @@ std::vector<cv::Point2d> projectBoxCorners(
  *
  * @param image Source image.
  * @param corners Project 2D box corners.
+ * @param score Box score [0.0, 1.0].
  * @param color Edge color.
  * @param thickness Edge thickness.
  */
 void renderBoxEdges(
-  cv::Mat & image, const std::vector<cv::Point2d> & corners, const cv::Scalar & color,
+  cv::Mat & image, const std::vector<cv::Point2d> & corners, double score, const cv::Scalar & color,
   int thickness = 3)
 {
+  if (corners.size() == 0) {
+    return;
+  }
+
   static std::array<std::pair<size_t, size_t>, 12> edges{
     std::make_pair(0, 1), std::make_pair(0, 2), std::make_pair(0, 4), std::make_pair(1, 3),
     std::make_pair(1, 5), std::make_pair(2, 3), std::make_pair(2, 6), std::make_pair(3, 7),
@@ -154,6 +162,18 @@ void renderBoxEdges(
       cv::line(image, corners[i0], corners[i1], color, thickness);
     }
   }
+
+  const auto min_ptr = std::min_element(
+    corners.cbegin(), corners.cend(),
+    [&](const auto & xy1, const auto & xy2) { return xy1.y < xy2.y; });
+
+  cv::putText(
+    image, cv::format("%.1f%%", score * 100.0), cv::Point(min_ptr->x, min_ptr->y - 5),
+    cv::FONT_HERSHEY_COMPLEX_SMALL,
+    1,  // font scale
+    color,
+    1,  // thickness
+    cv::LINE_AA);
 }
 }  // namespace
 
@@ -251,7 +271,7 @@ void BoxArray3dVisualizer::callback(
 
     // Render corners on image.
     const auto color = color_map_(box.label);
-    renderBoxEdges(image, corners, color);
+    renderBoxEdges(image, corners, box.score, color);
   }
 
   cv_bridge::CvImage out_image_msg;

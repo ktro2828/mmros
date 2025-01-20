@@ -17,4 +17,45 @@
     <param name="scene_token" value="$(var scene_token)"/>
     <param name="publish_annotation" value="$(var publish_annotation)"/>
   </node>
+
+  <!-- visualize annotation boxes -->
+  <group if="$(var publish_annotation)">
+    <push-ros-namespace namespace="nuscenes"/>
+    <node pkg="mmrviz" exec="box_array3d_visualizer_exe" name="box_array3d_cam_front" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuscenes/CAM_FRONT/image"/>
+      <remap from="~/input/camera_info" to="/nuscenes/CAM_FRONT/camera_info"/>
+      <remap from="~/input/boxes" to="/nuscenes/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array3d_visualizer_exe" name="box_array3d_cam_front_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuscenes/CAM_FRONT_LEFT/image"/>
+      <remap from="~/input/camera_info" to="/nuscenes/CAM_FRONT_LEFT/camera_info"/>
+      <remap from="~/input/boxes" to="/nuscenes/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array3d_visualizer_exe" name="box_array3d_cam_front_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuscenes/CAM_FRONT_RIGHT/image"/>
+      <remap from="~/input/camera_info" to="/nuscenes/CAM_FRONT_RIGHT/camera_info"/>
+      <remap from="~/input/boxes" to="/nuscenes/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array3d_visualizer_exe" name="box_array3d_cam_back" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuscenes/CAM_BACK/image"/>
+      <remap from="~/input/camera_info" to="/nuscenes/CAM_BACK/camera_info"/>
+      <remap from="~/input/boxes" to="/nuscenes/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array3d_visualizer_exe" name="box_array3d_cam_back_right" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuscenes/CAM_BACK_RIGHT/image"/>
+      <remap from="~/input/camera_info" to="/nuscenes/CAM_BACK_RIGHT/camera_info"/>
+      <remap from="~/input/boxes" to="/nuscenes/annotation/boxes"/>
+    </node>
+    <node pkg="mmrviz" exec="box_array3d_visualizer_exe" name="box_array3d_cam_back_left" output="screen">
+      <param name="use_raw" value="false"/>
+      <remap from="~/input/image" to="/nuscenes/CAM_BACK_LEFT/image"/>
+      <remap from="~/input/camera_info" to="/nuscenes/CAM_BACK_LEFT/camera_info"/>
+      <remap from="~/input/boxes" to="/nuscenes/annotation/boxes"/>
+    </node>
+  </group>
 </launch>

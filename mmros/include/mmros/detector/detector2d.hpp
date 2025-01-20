@@ -37,6 +37,7 @@ struct Detector2dConfig
 {
   std::vector<double> mean;
   std::vector<double> std;
+  BoxFormat2D box_format;
   double score_threshold;
 };
 

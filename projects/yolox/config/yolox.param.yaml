@@ -3,4 +3,5 @@
     detector_config:
       mean: [0.0, 0.0, 0.0]
       std: [1.0, 1.0, 1.0]
+      box_format: xyxy
       score_threshold: 0.2

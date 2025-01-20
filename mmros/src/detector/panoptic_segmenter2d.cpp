@@ -258,10 +258,24 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
       if (score < detector_config_->score_threshold) {
         continue;
       }
-      const auto xmin = out_boxes[i * num_detection * 5 + j * 5] / scale;
-      const auto ymin = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
-      const auto xmax = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
-      const auto ymax = out_boxes[i * num_detection * 5 + j * 5 + 3] / scale;
+
+      float xmin, ymin, xmax, ymax;
+      if (detector_config_->box_format == BoxFormat2D::XYXY) {
+        xmin = out_boxes[i * num_detection * 5 + j * 5] / scale;
+        ymin = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
+        xmax = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
+        ymax = out_boxes[i * num_detection * 5 + j * 5 + 3] / scale;
+      } else {
+        float cx = out_boxes[i * num_detection * 5 + j * 5] / scale;
+        float cy = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
+        float width = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
+        float height = out_boxes[i * num_detection * 5 + j * 5 + 3] / scale;
+        xmin = cx - 0.5 * width;
+        ymin = cy - 0.5 * height;
+        xmax = cx + 0.5 * width;
+        ymax = cy + 0.5 * height;
+      }
+
       const auto label = out_labels[i * num_detection + j];
       boxes.emplace_back(xmin, ymin, xmax, ymax, score, label);
     }

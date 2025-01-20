@@ -2,6 +2,8 @@
 
 This performs to visualize 3D bounding boxes by projecting on the image.
 
+![BoxArray3d](../assets/sample_box_array3d.png)
+
 ## Inputs & Outputs
 
 | Name                  |            Topic             | Description       |

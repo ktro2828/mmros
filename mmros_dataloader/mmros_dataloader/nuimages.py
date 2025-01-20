@@ -370,6 +370,11 @@ class NuImagesPublisher(Node):
             0.0,
         ]
 
+        # row-major matrix R: (3x3)
+        camera_info_msg.r[0] = 1.0
+        camera_info_msg.r[3] = 1.0
+        camera_info_msg.r[6] = 1.0
+
         # distortion parameter (assumed 0)
         camera_info_msg.distortion_model = "plumb_bob"
         camera_info_msg.d = [0.0, 0.0, 0.0, 0.0, 0.0]

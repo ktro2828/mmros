@@ -1,5 +1,8 @@
 /**:
   ros__parameters:
+    tensorrt:
+      onnx_path: $(var data_path)/yolox_l_8x8_300e_coco-static-640x640.onnx
+      precision: fp32
     detector_config:
       mean: [0.0, 0.0, 0.0]
       std: [1.0, 1.0, 1.0]

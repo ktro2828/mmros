@@ -30,10 +30,13 @@
 
 namespace mmros
 {
+/**
+ * @brief Configuration for 2D semantic segmenter.
+ */
 struct SemanticSegmenter2dConfig
 {
-  std::vector<double> mean;
-  std::vector<double> std;
+  std::vector<double> mean;  //!< Image mean.
+  std::vector<double> std;   //!< Image std.
 };
 
 /**
@@ -63,10 +66,25 @@ public:
   Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
+  /**
+   * @brief Initialize CUDA pointers.
+   *
+   * @param batch_size Batch size.
+   */
   void initCudaPtr(size_t batch_size) noexcept;
 
+  /**
+   * @brief Execute preprocessing.
+   *
+   * @param images Vector of images.
+   */
   cudaError_t preprocess(const std::vector<cv::Mat> & images) noexcept;
 
+  /**
+   * @brief Execute postprocessing.
+   *
+   * @param images Vector of images.
+   */
   Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
 
   std::unique_ptr<TrtCommon> trt_common_;                       //!< TrtCommon pointer.

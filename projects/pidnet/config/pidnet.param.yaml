@@ -3,6 +3,6 @@
     tensorrt:
       onnx_path: $(var data_path)/pidnet-l_2xb6-120k_cityscapes-static-1024x1024.onnx
       precision: fp32
-    detector_config:
+    detector:
       mean: [123.675, 116.28, 103.53]
       std: [58.395, 57.12, 57.375]

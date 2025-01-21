@@ -38,8 +38,8 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
     auto precision = declare_parameter<std::string>("tensorrt.precision");
     TrtCommonConfig trt_config(onnx_path, precision);
 
-    auto mean = declare_parameter<std::vector<double>>("detector_config.mean");
-    auto std = declare_parameter<std::vector<double>>("detector_config.std");
+    auto mean = declare_parameter<std::vector<double>>("detector.mean");
+    auto std = declare_parameter<std::vector<double>>("detector.std");
     SemanticSegmenter2dConfig detector_config{mean, std};
     detector_ = std::make_unique<SemanticSegmenter2D>(trt_config, detector_config);
   }

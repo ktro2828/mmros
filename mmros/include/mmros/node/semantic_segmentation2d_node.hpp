@@ -30,16 +30,41 @@
 
 namespace mmros
 {
+/**
+ * @brief A ROS 2 node class for 2D semantic segmenter.
+ */
 class SemanticSegmentation2dNode : public rclcpp::Node
 {
 public:
+  /**
+   * @brief Construct a new SemanticSegmentation2dNode object.
+   *
+   * @param options Node options.
+   */
   explicit SemanticSegmentation2dNode(const rclcpp::NodeOptions & options);
 
+  /**
+   * @brief Main callback for input image.
+   *
+   * @param msg Input image message.
+   */
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
+  /**
+   * @brief Check node connection and start subscribing.
+   *
+   * @param use_raw Indicates whether to use raw image.
+   */
   void onConnect(bool use_raw);
 
+  /**
+   * @brief Return QoS of the specified topic.
+   *
+   * If it fails to load the specified QoS, returns `std::nullopt`.
+   *
+   * @param query_topic Topic name.
+   */
   std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
   rclcpp::TimerBase::SharedPtr timer_;                         //!< Timer.

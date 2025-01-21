@@ -27,33 +27,62 @@ enum class BoxFormat2D {
   XYWH = 1   //!< (cx, cy, width, height) order.
 };
 
+/**
+ * @brief A class for 2D bounding box.
+ */
 struct Box2D
 {
-  float xmin;
-  float ymin;
-  float xmax;
-  float ymax;
-  float score;
-  int label;
+  float xmin;   //!< Top left x.
+  float ymin;   //!< Top left y.
+  float xmax;   //!< Bottom right x.
+  float ymax;   //!< Bottom right y.
+  float score;  //!< Score in [0.0, 1.0].
+  int label;    //!< Label ID.
 
+  /**
+   * @brief Construct a new Box2D object.
+   *
+   * @param xmin Top left x.
+   * @param ymin Top left y.
+   * @param xmax Bottom right x.
+   * @param ymax Bottom right y.
+   * @param score Score in [0.0, 1.0].
+   * @param label Label ID.
+   */
   Box2D(float xmin, float ymin, float xmax, float ymax, float score, int label)
   : xmin(xmin), ymin(ymin), xmax(xmax), ymax(ymax), score(score), label(label)
   {
   }
 };
 
+/**
+ * @brief A class for 3D bounding box.
+ */
 struct Box3D
 {
-  float x;
-  float y;
-  float z;
-  float length;
-  float width;
-  float height;
-  float yaw;
-  float score;
-  int label;
+  float x;       //!< Center x.
+  float y;       //!< Center y.
+  float z;       //!< Center z.
+  float length;  //!< X-direction length.
+  float width;   //!< Y-direction width.
+  float height;  //!< Z-direction height.
+  float yaw;     //!< Box heading in [rad].
+  float score;   //!< Score in [0.0, 1.0].
+  int label;     //!< Label ID.
 
+  /**
+   * @brief Construct a new Box3D object.
+   *
+   * @param x Center x.
+   * @param y Center y.
+   * @param z Center z.
+   * @param length X-direction length.
+   * @param width Y-direction width.
+   * @param height Z-direction height.
+   * @param yaw Box heading in [rad].
+   * @param score Score in [0.0, 1.0].
+   * @param label Label ID.
+   */
   Box3D(
     float x, float y, float z, float length, float width, float height, float yaw, float score,
     int label)

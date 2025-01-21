@@ -38,13 +38,14 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
 : rclcpp::Node("detection2d", options)
 {
   {
-    auto onnx_path = declare_parameter<std::string>("onnx_path");
-    TrtCommonConfig trt_config(onnx_path);
+    auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
+    auto precision = declare_parameter<std::string>("tensorrt.precision");
+    TrtCommonConfig trt_config(onnx_path, precision);
 
-    auto mean = declare_parameter<std::vector<double>>("detector_config.mean");
-    auto std = declare_parameter<std::vector<double>>("detector_config.std");
-    auto score_threshold = declare_parameter<float>("detector_config.score_threshold");
-    auto box_format_str = declare_parameter<std::string>("detector_config.box_format");
+    auto mean = declare_parameter<std::vector<double>>("detector.mean");
+    auto std = declare_parameter<std::vector<double>>("detector.std");
+    auto score_threshold = declare_parameter<float>("detector.score_threshold");
+    auto box_format_str = declare_parameter<std::string>("detector.box_format");
     BoxFormat2D box_format;
     if (box_format_str == "xyxy") {
       box_format = BoxFormat2D::XYXY;

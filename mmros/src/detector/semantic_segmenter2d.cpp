@@ -14,6 +14,7 @@
 
 #include "mmros/detector/semantic_segmenter2d.hpp"
 
+#include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
 #include "mmros/preprocess/image.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
@@ -77,7 +78,7 @@ SemanticSegmenter2D::SemanticSegmenter2D(
 Result<outputs_type> SemanticSegmenter2D::doInference(const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
-    return Err<outputs_type>(InferenceError_t::UNKNOWN, "No image.");
+    return Err<outputs_type>(MmRosError_t::UNKNOWN, "No image.");
   }
 
   // 1. Init CUDA pointers
@@ -88,7 +89,7 @@ Result<outputs_type> SemanticSegmenter2D::doInference(const std::vector<cv::Mat>
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
        << ::cudaGetErrorString(err);
-    return Err<outputs_type>(InferenceError_t::CUDA, os.str());
+    return Err<outputs_type>(MmRosError_t::CUDA, os.str());
   }
 
   // 3. Set tensors
@@ -96,14 +97,14 @@ Result<outputs_type> SemanticSegmenter2D::doInference(const std::vector<cv::Mat>
   if (!trt_common_->setTensorsAddresses(buffers)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+    return Err<outputs_type>(MmRosError_t::TENSORRT, os.str());
   }
 
   // 4. Execute inference
   if (!trt_common_->enqueueV3(stream_)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+    return Err<outputs_type>(MmRosError_t::TENSORRT, os.str());
   }
 
   // 5. Execute postprocess
@@ -195,7 +196,7 @@ Result<outputs_type> SemanticSegmenter2D::postprocess(const std::vector<cv::Mat>
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
        << ::cudaGetErrorString(err);
-    return Err<outputs_type>(InferenceError_t::CUDA, os.str());
+    return Err<outputs_type>(MmRosError_t::CUDA, os.str());
   }
 
   cudaStreamSynchronize(stream_);

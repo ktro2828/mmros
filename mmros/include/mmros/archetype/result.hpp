@@ -15,81 +15,13 @@
 #ifndef MMROS__ARCHETYPE__RESULT_HPP_
 #define MMROS__ARCHETYPE__RESULT_HPP_
 
-#include <exception>
-#include <stdexcept>
+#include "mmros/archetype/exception.hpp"
+
 #include <string>
 #include <variant>
 
 namespace mmros
 {
-/**
- * @brief An enumerate to represent error kind.
- */
-enum InferenceError_t {
-  TENSORRT,  //!< TensorRT related error.
-  CUDA,      //!< CUDA related error.
-  UNKNOWN,   //!< Unknown error.
-};
-
-/**
- * @brief A class to hold error kind and message.
- */
-struct InferenceError
-{
-  /**
-   * @brief Construct a new InferenceError object with message.
-   *
-   * @param kind Error kind.
-   * @param msg Error message.
-   */
-  InferenceError(const InferenceError_t & kind, const std::string & msg) : kind(kind), msg(msg) {}
-
-  /**
-   * @brief Construct a new InferenceError object without any message.
-   *
-   * @param kind Error kind.
-   */
-  explicit InferenceError(const InferenceError_t & kind) : kind(kind), msg("") {}
-
-  InferenceError_t kind;  //!< Error kind.
-  std::string msg;        //!< Error message.
-};
-
-/**
- * @brief An exception class for `InferenceError`.
- */
-class InferenceException : public std::exception
-{
-public:
-  /**
-   * @brief Construct a new InferenceException object.
-   *
-   * @param error `InferenceError` object.
-   */
-  explicit InferenceException(const InferenceError & error) : error_(error)
-  {
-    switch (error_.kind) {
-      case InferenceError_t::TENSORRT:
-        msg_ = "[TENSORRT]: " + error_.msg;
-        break;
-      case InferenceError_t::CUDA:
-        msg_ = "[CUDA]: " + error_.msg;
-        break;
-      default:
-        msg_ = "[UNKNOWN]: " + error_.msg;
-    }
-  }
-
-  /**
-   * @brief Return the error message.
-   */
-  const char * what() const throw() { return msg_.c_str(); }
-
-private:
-  InferenceError error_;  //!< Error object.
-  std::string msg_;       //!< Error message.
-};
-
 /**
  * @brief An class to hold expected value or error.
  *
@@ -109,9 +41,9 @@ public:
   /**
    * @brief Construct a new Result object with an error.
    *
-   * @param error `InferenceError` object.
+   * @param error `MmRosError` object.
    */
-  explicit Result(const InferenceError & error) : value_(error) {}
+  explicit Result(const MmRosError & error) : value_(error) {}
 
   /**
    * @brief Check whether holding value is expected type.
@@ -119,19 +51,19 @@ public:
   bool isOk() const noexcept { return std::holds_alternative<T>(value_); }
 
   /**
-   * @brief Return the expected value if it holds, otherwise throw `InferenceException`.
+   * @brief Return the expected value if it holds, otherwise throw `MmRosException`.
    */
   T unwrap() const
   {
     if (isOk()) {
       return std::get<T>(value_);
     } else {
-      throw InferenceException(std::get<InferenceError>(value_));
+      throw MmRosException(std::get<MmRosError>(value_));
     }
   }
 
 private:
-  std::variant<T, InferenceError> value_;  //!< Container of expected value or error.
+  std::variant<T, MmRosError> value_;  //!< Container of expected value or error.
 };
 
 /**
@@ -151,10 +83,10 @@ Result<T> Ok(const T & value) noexcept
  * @brief Return `Result` with en error.
  *
  * @tparam T Data type of the expected value.
- * @param error `InferenceError` object.
+ * @param error `MmRosError` object.
  */
 template <typename T>
-Result<T> Err(const InferenceError & error) noexcept
+Result<T> Err(const MmRosError & error) noexcept
 {
   return Result<T>(error);
 }
@@ -166,9 +98,9 @@ Result<T> Err(const InferenceError & error) noexcept
  * @param kind Error kind.
  */
 template <typename T>
-Result<T> Err(const InferenceError_t & kind) noexcept
+Result<T> Err(const MmRosError_t & kind) noexcept
 {
-  InferenceError error(kind);
+  MmRosError error(kind);
   return Result<T>(error);
 }
 
@@ -180,9 +112,9 @@ Result<T> Err(const InferenceError_t & kind) noexcept
  * @param msg Error message.
  */
 template <typename T>
-Result<T> Err(const InferenceError_t & kind, const std::string & msg) noexcept
+Result<T> Err(const MmRosError_t & kind, const std::string & msg) noexcept
 {
-  InferenceError error(kind, msg);
+  MmRosError error(kind, msg);
   return Result<T>(error);
 }
 }  // namespace mmros

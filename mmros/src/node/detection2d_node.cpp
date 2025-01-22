@@ -15,6 +15,7 @@
 #include "mmros/node/detection2d_node.hpp"
 
 #include "mmros/archetype/box.hpp"
+#include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
 #include "mmros/detector/detector2d.hpp"
 
@@ -124,7 +125,7 @@ void Detection2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
     batch_boxes = detector_->doInference(images).unwrap();
-  } catch (const InferenceException & e) {
+  } catch (const MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;
   }

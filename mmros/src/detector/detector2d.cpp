@@ -15,6 +15,7 @@
 #include "mmros/detector/detector2d.hpp"
 
 #include "mmros/archetype/box.hpp"
+#include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
 #include "mmros/preprocess/image.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
@@ -74,7 +75,7 @@ Detector2D::Detector2D(const TrtCommonConfig & trt_config, const Detector2dConfi
 Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
-    return Err<outputs_type>(InferenceError_t::UNKNOWN, "No image.");
+    return Err<outputs_type>(MmRosError_t::UNKNOWN, "No image.");
   }
 
   // 1. Init CUDA pointers
@@ -85,7 +86,7 @@ Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
        << ::cudaGetErrorString(err);
-    return Err<outputs_type>(InferenceError_t::CUDA, os.str());
+    return Err<outputs_type>(MmRosError_t::CUDA, os.str());
   }
 
   // 3. Set tensors
@@ -93,14 +94,14 @@ Result<outputs_type> Detector2D::doInference(const std::vector<cv::Mat> & images
   if (!trt_common_->setTensorsAddresses(buffers)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+    return Err<outputs_type>(MmRosError_t::TENSORRT, os.str());
   }
 
   // 4. Execute inference
   if (!trt_common_->enqueueV3(stream_)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return Err<outputs_type>(InferenceError_t::TENSORRT, os.str());
+    return Err<outputs_type>(MmRosError_t::TENSORRT, os.str());
   }
 
   // 5. Execute postprocess
@@ -198,7 +199,7 @@ Result<outputs_type> Detector2D::postprocess(const std::vector<cv::Mat> & images
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
        << ::cudaGetErrorString(err);
-    return Err<outputs_type>(InferenceError_t::CUDA, os.str());
+    return Err<outputs_type>(MmRosError_t::CUDA, os.str());
   }
   if (const auto err = ::cudaMemcpyAsync(
         out_labels.data(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
@@ -207,7 +208,7 @@ Result<outputs_type> Detector2D::postprocess(const std::vector<cv::Mat> & images
     std::ostringstream os;
     os << ::cudaGetErrorName(err) << " (" << err << ")@" << __FILE__ << "#L" << __LINE__ << ": "
        << ::cudaGetErrorString(err);
-    return Err<outputs_type>(InferenceError_t::CUDA, os.str());
+    return Err<outputs_type>(MmRosError_t::CUDA, os.str());
   }
 
   cudaStreamSynchronize(stream_);

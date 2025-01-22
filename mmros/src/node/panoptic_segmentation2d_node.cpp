@@ -14,6 +14,7 @@
 
 #include "mmros/node/panoptic_segmentation2d_node.hpp"
 
+#include "mmros/archetype/exception.hpp"
 #include "mmros/detector/panoptic_segmenter2d.hpp"
 #include "mmros/node/semantic_segmentation2d_node.hpp"
 
@@ -124,7 +125,7 @@ void PanopticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
     batch_outputs = detector_->doInference(images).unwrap();
-  } catch (const InferenceException & e) {
+  } catch (const MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;
   }

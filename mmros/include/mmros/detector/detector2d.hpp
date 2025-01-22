@@ -31,17 +31,17 @@
 #include <optional>
 #include <vector>
 
-namespace mmros
+namespace mmros::detector
 {
 /**
  * @brief Configuration for 2D box detector.
  */
 struct Detector2dConfig
 {
-  std::vector<double> mean;  //!< Image mean.
-  std::vector<double> std;   //!< Image std.
-  BoxFormat2D box_format;    //!< Box format.
-  double score_threshold;    //!< Score threshold.
+  std::vector<double> mean;           //!< Image mean.
+  std::vector<double> std;            //!< Image std.
+  archetype::BoxFormat2D box_format;  //!< Box format.
+  double score_threshold;             //!< Score threshold.
 };
 
 /**
@@ -50,7 +50,7 @@ struct Detector2dConfig
 class Detector2D
 {
 public:
-  using output_type = Boxes2D;                    //!< Output type of inference results.
+  using output_type = archetype::Boxes2D;         //!< Output type of inference results.
   using outputs_type = std::vector<output_type>;  //!< Outputs type of batch results.
 
   /**
@@ -59,15 +59,16 @@ public:
    * @param trt_config TensorRT common config.
    * @param detector_config Detector config.
    */
-  explicit Detector2D(const TrtCommonConfig & trt_config, const Detector2dConfig & detector_config);
+  explicit Detector2D(
+    const tensorrt::TrtCommonConfig & trt_config, const Detector2dConfig & detector_config);
 
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
    *
    * @param images Vector of mutiple batch images.
-   * @return Result<outputs_type>
+   * @return archetype::Result<outputs_type>
    */
-  Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
   /**
@@ -93,9 +94,9 @@ private:
    *
    * @param images Vector of images.
    */
-  Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
 
-  std::unique_ptr<TrtCommon> trt_common_;              //!< TrtCommon pointer.
+  std::unique_ptr<tensorrt::TrtCommon> trt_common_;    //!< TrtCommon pointer.
   std::unique_ptr<Detector2dConfig> detector_config_;  //!< Detector config.
   cudaStream_t stream_;                                //! CUDA stream.
 
@@ -105,5 +106,5 @@ private:
   cuda::CudaUniquePtr<float[]> out_boxes_d_;  //!< Output detection pointer on device [B, N, 5].
   cuda::CudaUniquePtr<int[]> out_labels_d_;   //!< Output label pointer on the device [B, N].
 };
-}  // namespace mmros
+}  // namespace mmros::detector
 #endif  // MMROS__DETECTOR__DETECTOR2D_HPP_

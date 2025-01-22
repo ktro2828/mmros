@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace mmros
+namespace mmros::tensorrt
 {
 template <typename T>
 struct InferDeleter
@@ -378,5 +378,5 @@ private:
   //! @brief Model network input/output tensors information.
   NetworkIOPtr network_io_;
 };
-}  // namespace mmros
+}  // namespace mmros::tensorrt
 #endif  // MMROS__TENSORRT__TENSORRT_COMMON_HPP_

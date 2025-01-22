@@ -18,7 +18,7 @@
 #include <exception>
 #include <string>
 
-namespace mmros
+namespace mmros::archetype
 {
 /**
  * @brief An enumerate to represent error kind.
@@ -103,5 +103,5 @@ private:
   MmRosError error_;  //!< Error object.
   std::string msg_;   //!< Error message.
 };
-}  // namespace mmros
+}  // namespace mmros::archetype
 #endif  // MMROS__ARCHETYPE__EXCEPTION_HPP_

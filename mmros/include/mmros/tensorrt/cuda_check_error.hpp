@@ -35,7 +35,7 @@ void cuda_check_error(const ::cudaError_t e, F && f, N && n)
     std::ostringstream oss;
     oss << ::cudaGetErrorName(e) << " (" << e << ")@" << f << "#L" << n << ": "
         << ::cudaGetErrorString(e);
-    throw MmRosException(MmRosError_t::CUDA, oss.str());
+    throw archetype::MmRosException(archetype::MmRosError_t::CUDA, oss.str());
   }
 }
 }  // namespace mmros::cuda

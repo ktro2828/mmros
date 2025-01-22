@@ -17,7 +17,7 @@
 
 #include <vector>
 
-namespace mmros
+namespace mmros::archetype
 {
 /**
  * @brief An enum representing 2D box format.
@@ -101,5 +101,5 @@ struct Box3D
 
 using Boxes2D = std::vector<Box2D>;
 using Boxes3D = std::vector<Box3D>;
-}  // namespace mmros
+}  // namespace mmros::archetype
 #endif  // MMROS__ARCHETYPE__BOX_HPP_

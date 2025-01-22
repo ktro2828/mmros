@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-namespace mmros
+namespace mmros::tensorrt
 {
 TrtCommon::TrtCommon(
   const TrtCommonConfig & trt_config, const std::shared_ptr<Profiler> & profiler,
@@ -648,4 +648,4 @@ bool TrtCommon::validateNetworkIO()
 
   return success;
 }
-}  // namespace mmros
+}  // namespace mmros::tensorrt

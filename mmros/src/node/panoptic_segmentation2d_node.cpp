@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace mmros
+namespace mmros::node
 {
 PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions & options)
 : rclcpp::Node("panoptic_segmentation2d", options)
@@ -40,23 +40,23 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
     auto score_threshold = declare_parameter<double>("detector.score_threshold");
     auto box_format_str = declare_parameter<std::string>("detector.box_format");
-    BoxFormat2D box_format;
+    archetype::BoxFormat2D box_format;
     if (box_format_str == "xyxy") {
-      box_format = BoxFormat2D::XYXY;
+      box_format = archetype::BoxFormat2D::XYXY;
     } else if (box_format_str == "xywh") {
-      box_format = BoxFormat2D::XYWH;
+      box_format = archetype::BoxFormat2D::XYWH;
     } else {
       throw std::invalid_argument(
         "Expected box format is (xyxy, or xywh), but got: " + box_format_str);
     }
-    PanopticSegmenter2dConfig detector_config{mean, std, box_format, score_threshold};
-    detector_ = std::make_unique<PanopticSegmenter2D>(trt_config, detector_config);
+    detector::PanopticSegmenter2dConfig detector_config{mean, std, box_format, score_threshold};
+    detector_ = std::make_unique<detector::PanopticSegmenter2D>(trt_config, detector_config);
   }
 
   {
@@ -121,11 +121,11 @@ void PanopticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
     return;
   }
 
-  std::vector<std::pair<Boxes2D, cv::Mat>> batch_outputs;
+  std::vector<std::pair<archetype::Boxes2D, cv::Mat>> batch_outputs;
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
     batch_outputs = detector_->doInference(images).unwrap();
-  } catch (const MmRosException & e) {
+  } catch (const archetype::MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;
   }
@@ -153,7 +153,7 @@ void PanopticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
     pub_mask_->publish(*output_mask_msg);
   }
 }
-}  // namespace mmros
+}  // namespace mmros::node
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(mmros::PanopticSegmentation2dNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(mmros::node::PanopticSegmentation2dNode)

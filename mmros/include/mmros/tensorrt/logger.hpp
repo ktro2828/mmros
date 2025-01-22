@@ -29,7 +29,7 @@
 #include <thread>
 #include <vector>
 
-namespace mmros
+namespace mmros::tensorrt
 {
 using Severity = nvinfer1::ILogger::Severity;
 
@@ -601,5 +601,5 @@ inline LogStreamConsumer LOG_FATAL(const Logger & logger)
 }
 
 }  // anonymous namespace
-}  // namespace mmros
+}  // namespace mmros::tensorrt
 #endif  // MMROS__TENSORRT__LOGGER_HPP_

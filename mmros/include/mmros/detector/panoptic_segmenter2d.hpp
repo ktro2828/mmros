@@ -73,15 +73,19 @@ private:
    * @brief Initialize CUDA pointers.
    *
    * @param batch_size Batch size.
+   *
+   * @throw Throw `MmRosException` if any CUDA processing failed.
    */
-  void initCudaPtr(size_t batch_size) noexcept;
+  void initCudaPtr(size_t batch_size);
 
   /**
    * @brief Execute preprocessing.
    *
    * @param images Vector of images.
+   *
+   * @throw Throw `MmRosException` if any CUDA processing failed.
    */
-  cudaError_t preprocess(const std::vector<cv::Mat> & images) noexcept;
+  void preprocess(const std::vector<cv::Mat> & images);
 
   /**
    * @brief Execute postprocessing.

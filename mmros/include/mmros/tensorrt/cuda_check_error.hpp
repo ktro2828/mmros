@@ -20,10 +20,11 @@
 #ifndef MMROS__TENSORRT__CUDA_CHECK_ERROR_HPP_
 #define MMROS__TENSORRT__CUDA_CHECK_ERROR_HPP_
 
+#include "mmros/archetype/exception.hpp"
+
 #include <cuda_runtime_api.h>
 
 #include <sstream>
-#include <stdexcept>
 
 namespace mmros::cuda
 {
@@ -31,10 +32,10 @@ template <typename F, typename N>
 void cuda_check_error(const ::cudaError_t e, F && f, N && n)
 {
   if (e != ::cudaSuccess) {
-    std::stringstream s;
-    s << ::cudaGetErrorName(e) << " (" << e << ")@" << f << "#L" << n << ": "
-      << ::cudaGetErrorString(e);
-    throw std::runtime_error{s.str()};
+    std::ostringstream oss;
+    oss << ::cudaGetErrorName(e) << " (" << e << ")@" << f << "#L" << n << ": "
+        << ::cudaGetErrorString(e);
+    throw MmRosException(MmRosError_t::CUDA, oss.str());
   }
 }
 }  // namespace mmros::cuda

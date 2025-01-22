@@ -28,7 +28,7 @@
 #include <optional>
 #include <string>
 
-namespace mmros
+namespace mmros::node
 {
 /**
  * @brief A ROS 2 node class for 2D panoptic segmenter.
@@ -67,11 +67,11 @@ private:
    */
   std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
-  rclcpp::TimerBase::SharedPtr timer_;             //!< Timer.
-  std::unique_ptr<PanopticSegmenter2D> detector_;  //!< TensorRT detector.
-  image_transport::Subscriber sub_;                //!< Input image subscription.
+  rclcpp::TimerBase::SharedPtr timer_;                       //!< Timer.
+  std::unique_ptr<detector::PanopticSegmenter2D> detector_;  //!< TensorRT detector.
+  image_transport::Subscriber sub_;                          //!< Input image subscription.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_box_;  //!< Output box publisher.
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_mask_;     //!< Output mask publisher.
 };
-}  // namespace mmros
+}  // namespace mmros::node
 #endif  // MMROS__NODE__PANOPTIC_SEGMENTATION2D_NODE_HPP_

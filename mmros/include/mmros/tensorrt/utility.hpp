@@ -34,7 +34,7 @@ namespace fs = ::std::experimental::filesystem;
 #include <string_view>
 #include <utility>
 
-namespace mmros
+namespace mmros::tensorrt
 {
 //!< @brief Valid precision type names.
 constexpr std::array<std::string_view, 3> VALID_PRECISIONS = {"fp32", "fp16", "int8"};
@@ -377,5 +377,5 @@ struct CalibrationConfig
                                      //!< last layer
   const double clip_value;           //!< Clip value for implicit quantization
 };
-}  // namespace mmros
+}  // namespace mmros::tensorrt
 #endif  // MMROS__TENSORRT__UTILITY_HPP_

@@ -25,9 +25,8 @@
 #include <string>
 #include <vector>
 
-namespace mmros
+namespace mmros::tensorrt
 {
-
 /**
  * @brief Per-layer information of a convolution layer.
  */
@@ -104,5 +103,5 @@ private:
  * @return std::ostream& Output stream.
  */
 std::ostream & operator<<(std::ostream & os, const Profiler & profiler);
-}  // namespace mmros
+}  // namespace mmros::tensorrt
 #endif  // MMROS__TENSORRT__PROFILER_HPP_

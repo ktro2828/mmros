@@ -28,7 +28,7 @@
 #include <optional>
 #include <vector>
 
-namespace mmros
+namespace mmros::detector
 {
 /**
  * @brief Configuration for 2D semantic segmenter.
@@ -55,7 +55,8 @@ public:
    * @param detector_config Detector config.
    */
   explicit SemanticSegmenter2D(
-    const TrtCommonConfig & trt_config, const SemanticSegmenter2dConfig & detector_config);
+    const tensorrt::TrtCommonConfig & trt_config,
+    const SemanticSegmenter2dConfig & detector_config);
 
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
@@ -63,7 +64,7 @@ public:
    * @param images Vector of multiple batch images.
    * @return Result<outputs_type>
    */
-  Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
   /**
@@ -89,9 +90,9 @@ private:
    *
    * @param images Vector of images.
    */
-  Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
 
-  std::unique_ptr<TrtCommon> trt_common_;                       //!< TrtCommon pointer.
+  std::unique_ptr<tensorrt::TrtCommon> trt_common_;             //!< TrtCommon pointer.
   std::unique_ptr<SemanticSegmenter2dConfig> detector_config_;  //!< Detector config.
   cudaStream_t stream_;                                         //!< CUDA stream.
 
@@ -100,5 +101,5 @@ private:
 
   cuda::CudaUniquePtr<int[]> output_d_;  //!< Output mask pointer on the device. [B, 1, H, W].
 };
-}  // namespace mmros
+}  // namespace mmros::detector
 #endif  // MMROS__DETECTOR__SEMANTIC_SEGMENTER2D_HPP_

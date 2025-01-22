@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-namespace mmros
+namespace mmros::node
 {
 Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
 : rclcpp::Node("detection2d", options)
@@ -41,23 +41,23 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
     auto score_threshold = declare_parameter<float>("detector.score_threshold");
     auto box_format_str = declare_parameter<std::string>("detector.box_format");
-    BoxFormat2D box_format;
+    archetype::BoxFormat2D box_format;
     if (box_format_str == "xyxy") {
-      box_format = BoxFormat2D::XYXY;
+      box_format = archetype::BoxFormat2D::XYXY;
     } else if (box_format_str == "xywh") {
-      box_format = BoxFormat2D::XYWH;
+      box_format = archetype::BoxFormat2D::XYWH;
     } else {
       throw std::invalid_argument(
         "Expected box format is (xyxy, or xywh), but got: " + box_format_str);
     }
-    Detector2dConfig detector_config{mean, std, box_format, score_threshold};
-    detector_ = std::make_unique<Detector2D>(trt_config, detector_config);
+    detector::Detector2dConfig detector_config{mean, std, box_format, score_threshold};
+    detector_ = std::make_unique<detector::Detector2D>(trt_config, detector_config);
   }
 
   {
@@ -121,11 +121,11 @@ void Detection2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
     return;
   }
 
-  std::vector<Boxes2D> batch_boxes;
+  std::vector<archetype::Boxes2D> batch_boxes;
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
     batch_boxes = detector_->doInference(images).unwrap();
-  } catch (const MmRosException & e) {
+  } catch (const archetype::MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;
   }
@@ -149,7 +149,7 @@ void Detection2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
     pub_->publish(output_msg);
   }
 }
-}  // namespace mmros
+}  // namespace mmros::node
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(mmros::Detection2dNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(mmros::node::Detection2dNode)

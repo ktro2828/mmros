@@ -20,7 +20,7 @@
 #include <string>
 #include <variant>
 
-namespace mmros
+namespace mmros::archetype
 {
 /**
  * @brief An class to hold expected value or error.
@@ -117,5 +117,5 @@ Result<T> Err(const MmRosError_t & kind, const std::string & msg) noexcept
   MmRosError error(kind, msg);
   return Result<T>(error);
 }
-}  // namespace mmros
+}  // namespace mmros::archetype
 #endif  // MMROS__ARCHETYPE__RESULT_HPP_

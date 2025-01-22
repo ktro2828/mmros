@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-namespace mmros
+namespace mmros::tensorrt
 {
 Profiler::Profiler(const std::vector<Profiler> & profilers) : index_(0)
 {
@@ -143,4 +143,4 @@ std::ostream & operator<<(std::ostream & os, const Profiler * profiler)
   os << profiler->toString();
   return os;
 }
-}  // namespace mmros
+}  // namespace mmros::tensorrt

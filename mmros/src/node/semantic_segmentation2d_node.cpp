@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-namespace mmros
+namespace mmros::node
 {
 SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions & options)
 : rclcpp::Node("semantic_segmentation2d", options)
@@ -37,12 +37,12 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
-    SemanticSegmenter2dConfig detector_config{mean, std};
-    detector_ = std::make_unique<SemanticSegmenter2D>(trt_config, detector_config);
+    detector::SemanticSegmenter2dConfig detector_config{mean, std};
+    detector_ = std::make_unique<detector::SemanticSegmenter2D>(trt_config, detector_config);
   }
 
   {
@@ -111,7 +111,7 @@ void SemanticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
     batch_masks = detector_->doInference(images).unwrap();
-  } catch (const MmRosException & e) {
+  } catch (const archetype::MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;
   }
@@ -123,7 +123,7 @@ void SemanticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
     pub_->publish(*output_msg);
   }
 }
-}  // namespace mmros
+}  // namespace mmros::node
 
 #include <rclcpp_components/register_node_macro.hpp>
-RCLCPP_COMPONENTS_REGISTER_NODE(mmros::SemanticSegmentation2dNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(mmros::node::SemanticSegmentation2dNode)

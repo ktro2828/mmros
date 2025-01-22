@@ -77,19 +77,24 @@ target_compile_definitions(
 # -------- register composable nodes --------
 # detection2d
 rclcpp_components_register_node(
-  ${PROJECT_NAME} PLUGIN "mmros::Detection2dNode"
-  EXECUTABLE ${PROJECT_NAME}_detection2d_exe)
+  ${PROJECT_NAME} PLUGIN
+  "mmros::node::Detection2dNode" EXECUTABLE
+  ${PROJECT_NAME}_detection2d_exe)
 
 # semantic segmentation2d
 rclcpp_components_register_node(
-  ${PROJECT_NAME} PLUGIN
-  "mmros::SemanticSegmentation2dNode" EXECUTABLE
+  ${PROJECT_NAME}
+  PLUGIN
+  "mmros::node::SemanticSegmentation2dNode"
+  EXECUTABLE
   ${PROJECT_NAME}_semantic_segmentation2d_exe)
 
 # panoptic segmentation2d
 rclcpp_components_register_node(
-  ${PROJECT_NAME} PLUGIN
-  "mmros::PanopticSegmentation2dNode" EXECUTABLE
+  ${PROJECT_NAME}
+  PLUGIN
+  "mmros::node::PanopticSegmentation2dNode"
+  EXECUTABLE
   ${PROJECT_NAME}_panoptic_segmentation2d_exe)
 
 # -------- testing targets --------

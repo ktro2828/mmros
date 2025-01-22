@@ -29,17 +29,17 @@
 #include <utility>
 #include <vector>
 
-namespace mmros
+namespace mmros::detector
 {
 /**
  * @brief Configuration for 2D panoptic segmenter.
  */
 struct PanopticSegmenter2dConfig
 {
-  std::vector<double> mean;  //!< Image mean.
-  std::vector<double> std;   //!< Image std.
-  BoxFormat2D box_format;    //!< Box format.
-  double score_threshold;    //!< Score threshold.
+  std::vector<double> mean;           //!< Image mean.
+  std::vector<double> std;            //!< Image std.
+  archetype::BoxFormat2D box_format;  //!< Box format.
+  double score_threshold;             //!< Score threshold.
 };
 
 /**
@@ -48,8 +48,9 @@ struct PanopticSegmenter2dConfig
 class PanopticSegmenter2D
 {
 public:
-  using output_type = std::pair<Boxes2D, cv::Mat>;  //!< Output type of inference results.
-  using outputs_type = std::vector<output_type>;    //!< Outputs type of batch results.
+  using output_type =
+    std::pair<archetype::Boxes2D, cv::Mat>;       //!< Output type of inference results.
+  using outputs_type = std::vector<output_type>;  //!< Outputs type of batch results.
 
   /**
    * @brief
@@ -58,15 +59,16 @@ public:
    * @param detector_config Detector config.
    */
   explicit PanopticSegmenter2D(
-    const TrtCommonConfig & trt_config, const PanopticSegmenter2dConfig & detector_config);
+    const tensorrt::TrtCommonConfig & trt_config,
+    const PanopticSegmenter2dConfig & detector_config);
 
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
    *
    * @param images Vector of multiple batch images.
-   * @return Result<outputs_type>
+   * @return archetype::Result<outputs_type>
    */
-  Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
   /**
@@ -92,9 +94,9 @@ private:
    *
    * @param images Vector of images.
    */
-  Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> postprocess(const std::vector<cv::Mat> & images) noexcept;
 
-  std::unique_ptr<TrtCommon> trt_common_;                       //!< TrtCommon pointer.
+  std::unique_ptr<tensorrt::TrtCommon> trt_common_;             //!< TrtCommon pointer.
   std::unique_ptr<PanopticSegmenter2dConfig> detector_config_;  //!< Detector config.
   cudaStream_t stream_;                                         //!< CUDA stream.
 
@@ -107,5 +109,5 @@ private:
   cuda::CudaUniquePtr<float[]>
     out_segments_d_;  //!< Output segments pointer on the device. [B, C, H, W].
 };
-}  // namespace mmros
+}  // namespace mmros::detector
 #endif  // MMROS__DETECTOR__PANOPTIC_SEGMENTER2D_HPP_

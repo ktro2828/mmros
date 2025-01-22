@@ -28,7 +28,7 @@
 #include <optional>
 #include <string>
 
-namespace mmros
+namespace mmros::node
 {
 /**
  * @brief A ROS 2 node class for 2D semantic segmenter.
@@ -68,9 +68,9 @@ private:
   std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
   rclcpp::TimerBase::SharedPtr timer_;                         //!< Timer.
-  std::unique_ptr<SemanticSegmenter2D> detector_;              //!< TensorRT detector.
+  std::unique_ptr<detector::SemanticSegmenter2D> detector_;    //!< TensorRT detector.
   image_transport::Subscriber sub_;                            //!< Input image subscription.
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;  //!< Output publisher.
 };
-}  // namespace mmros
+}  // namespace mmros::node
 #endif  // MMROS__NODE__SEMANTIC_SEGMENTATION2D_NODE_HPP_

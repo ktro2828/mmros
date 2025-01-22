@@ -30,14 +30,14 @@
 #include <optional>
 #include <vector>
 
-namespace mmros
+namespace mmros::detector
 {
 using outputs_type = PanopticSegmenter2D::outputs_type;
 
 PanopticSegmenter2D::PanopticSegmenter2D(
-  const TrtCommonConfig & trt_config, const PanopticSegmenter2dConfig & detector_config)
+  const tensorrt::TrtCommonConfig & trt_config, const PanopticSegmenter2dConfig & detector_config)
 {
-  trt_common_ = std::make_unique<TrtCommon>(trt_config);
+  trt_common_ = std::make_unique<tensorrt::TrtCommon>(trt_config);
   detector_config_ = std::make_unique<PanopticSegmenter2dConfig>(detector_config);
 
   const auto network_input_dims = trt_common_->getTensorShape(0);
@@ -46,7 +46,7 @@ PanopticSegmenter2D::PanopticSegmenter2D(
   const auto in_height = network_input_dims.d[2];
   const auto in_width = network_input_dims.d[3];
 
-  std::vector<ProfileDims> profile_dims;
+  std::vector<tensorrt::ProfileDims> profile_dims;
   if (batch_size == -1) {
     // dynamic shape inference
     profile_dims = {
@@ -63,33 +63,35 @@ PanopticSegmenter2D::PanopticSegmenter2D(
        {4, batch_size, in_channel, in_height, in_width}}};
   }
 
-  auto profile_dims_ptr = std::make_unique<std::vector<ProfileDims>>(profile_dims);
+  auto profile_dims_ptr = std::make_unique<std::vector<tensorrt::ProfileDims>>(profile_dims);
 
   if (!trt_common_->setup(std::move(profile_dims_ptr))) {
-    throw MmRosException(MmRosError_t::TENSORRT, "Failed to setup TensorRT engine.");
+    throw archetype::MmRosException(
+      archetype::MmRosError_t::TENSORRT, "Failed to setup TensorRT engine.");
   }
 
   CHECK_CUDA_ERROR(cudaStreamCreate(&stream_));
 }
 
-Result<outputs_type> PanopticSegmenter2D::doInference(const std::vector<cv::Mat> & images) noexcept
+archetype::Result<outputs_type> PanopticSegmenter2D::doInference(
+  const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
-    return Err<outputs_type>(MmRosError_t::UNKNOWN, "No image.");
+    return archetype::Err<outputs_type>(archetype::MmRosError_t::UNKNOWN, "No image.");
   }
 
   // 1. Init CUDA pointers
   try {
     initCudaPtr(images.size());
-  } catch (const MmRosException & e) {
-    return Err<outputs_type>(MmRosError_t::CUDA, e.what());
+  } catch (const archetype::MmRosException & e) {
+    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   // 2. Execute preprocess
   try {
     preprocess(images);
-  } catch (const MmRosException & e) {
-    return Err<outputs_type>(MmRosError_t::CUDA, e.what());
+  } catch (const archetype::MmRosException & e) {
+    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   // 3. Set tensors
@@ -99,14 +101,14 @@ Result<outputs_type> PanopticSegmenter2D::doInference(const std::vector<cv::Mat>
   if (!trt_common_->setTensorsAddresses(buffers)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return Err<outputs_type>(MmRosError_t::TENSORRT, os.str());
+    return archetype::Err<outputs_type>(archetype::MmRosError_t::TENSORRT, os.str());
   }
 
   // 4. Execute inference
   if (!trt_common_->enqueueV3(stream_)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return Err<outputs_type>(MmRosError_t::TENSORRT, os.str());
+    return archetype::Err<outputs_type>(archetype::MmRosError_t::TENSORRT, os.str());
   }
 
   // 5. Execute postprocess
@@ -190,7 +192,8 @@ void PanopticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
   CHECK_CUDA_ERROR(cudaGetLastError());
 }
 
-Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat> & images) noexcept
+archetype::Result<outputs_type> PanopticSegmenter2D::postprocess(
+  const std::vector<cv::Mat> & images) noexcept
 {
   const auto batch_size = images.size();
 
@@ -224,15 +227,15 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
       sizeof(unsigned char) * batch_size * 1 * output_height * output_width,
       ::cudaMemcpyDeviceToHost, stream_));
     CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
-  } catch (const MmRosException & e) {
-    return Err<outputs_type>(MmRosError_t::CUDA, e.what());
+  } catch (const archetype::MmRosException & e) {
+    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   outputs_type output;
   output.reserve(batch_size);
   for (size_t i = 0; i < batch_size; ++i) {
     // Output boxes
-    Boxes2D boxes;
+    archetype::Boxes2D boxes;
     boxes.reserve(num_detection);
     const auto & scale = scales_.at(i);
     for (size_t j = 0; j < num_detection; ++j) {
@@ -242,7 +245,7 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
       }
 
       float xmin, ymin, xmax, ymax;
-      if (detector_config_->box_format == BoxFormat2D::XYXY) {
+      if (detector_config_->box_format == archetype::BoxFormat2D::XYXY) {
         xmin = out_boxes[i * num_detection * 5 + j * 5] / scale;
         ymin = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
         xmax = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
@@ -269,6 +272,6 @@ Result<outputs_type> PanopticSegmenter2D::postprocess(const std::vector<cv::Mat>
     output.emplace_back(boxes, mask);
   }
 
-  return Ok(output);
+  return archetype::Ok(output);
 }
-}  // namespace mmros
+}  // namespace mmros::detector

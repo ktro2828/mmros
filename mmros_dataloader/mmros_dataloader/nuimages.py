@@ -258,8 +258,8 @@ class NuImagesPublisher(Node):
         """Timer callback."""
         sd_tokens = self._nuim.get_sample_content(self._current_sample_token)
         is_all_sample_data_end = False
+        stamp = self.get_clock().now().to_msg()
         for sd_token in sd_tokens:
-            stamp = self.get_clock().now().to_msg()
             sample_data = self._nuim.get("sample_data", sd_token)
             self._broadcast_ego_pose(sample_data["ego_pose_token"], stamp=stamp)
             sensor_record = self._nuim.shortcut("sample_data", "sensor", sd_token)

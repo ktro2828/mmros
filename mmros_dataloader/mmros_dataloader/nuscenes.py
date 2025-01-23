@@ -260,8 +260,8 @@ class NuScenesPublisher(Node):
     def callback(self) -> None:
         """Timer callback."""
         sample = self._nusc.get("sample", self._current_sample_token)
+        stamp = self.get_clock().now().to_msg()
         for _, sd_token in sample["data"].items():
-            stamp = self.get_clock().now().to_msg()
             sample_data = self._nusc.get("sample_data", sd_token)
             self._broadcast_ego_pose(sample_data["ego_pose_token"], stamp=stamp)
             if "camera" == sample_data["sensor_modality"]:
@@ -270,7 +270,6 @@ class NuScenesPublisher(Node):
                 self._publish_lidar(sample_data, stamp=stamp)
 
         if self._publish_annotation:
-            stamp = self.get_clock().now().to_msg()
             self._publish_boxes(annotations=sample["anns"], stamp=stamp)
 
         if sample["next"] != "":

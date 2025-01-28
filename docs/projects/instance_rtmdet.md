@@ -1,4 +1,4 @@
-# New Project
+# Instance RTMDet
 
 For the details of the model configuration and results, please refer to [here]<LINK-TO-OpenMMLab-PROJECT>.
 

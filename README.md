@@ -38,13 +38,14 @@ ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
 
 ## Sample Projects
 
-| Task                  | Modality | Model                                                       |
-| --------------------- | -------- | ----------------------------------------------------------- |
-| Detection             | Camera   | [YOLOX (CVPR'2021)](./docs/projects/yolox.md)               |
-|                       | Camera   | [RTMDet (ArXiv'2022)](./docs/projects/rtmdet.md)            |
-| Semantic Segmentation | Camera   | [Mask2Former (CVPR'2022)](./docs/projects/mask2former.md)   |
-|                       | Camera   | [PIDNet (ArXiv'2022)](./docs/projects/pidnet.md)            |
-| Panoptic Segmentation | Camera   | [Panoptic FPN (CVPR'2019)](./docs/projects/panoptic_fpn.md) |
+| Task                  | Modality | Model                                                              |
+| --------------------- | -------- | ------------------------------------------------------------------ |
+| Detection             | Camera   | [YOLOX (CVPR'2021)](./docs/projects/yolox.md)                      |
+|                       | Camera   | [RTMDet (ArXiv'2022)](./docs/projects/rtmdet.md)                   |
+| Semantic Segmentation | Camera   | [Mask2Former (CVPR'2022)](./docs/projects/mask2former.md)          |
+|                       | Camera   | [PIDNet (ArXiv'2022)](./docs/projects/pidnet.md)                   |
+| Instance Segmentation | Camera   | [Instance RTMDet (ArXiv'2022)](./docs/projects/instance_rtmdet.md) |
+| Panoptic Segmentation | Camera   | [Panoptic FPN (CVPR'2019)](./docs/projects/panoptic_fpn.md)        |
 
 ## Contribution
 

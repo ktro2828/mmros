@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    tensorrt:
+      onnx_path: $(var data_path)/rtmdet-ins_x_8xb16-300e_coco-static-640x640.onnx
+      precision: fp32
+    detector:
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]
+      box_format: xyxy
+      score_threshold: 0.2

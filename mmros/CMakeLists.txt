@@ -81,6 +81,14 @@ rclcpp_components_register_node(
   "mmros::node::Detection2dNode" EXECUTABLE
   ${PROJECT_NAME}_detection2d_exe)
 
+# instance segmentation2d
+rclcpp_components_register_node(
+  ${PROJECT_NAME}
+  PLUGIN
+  "mmros::node::InstanceSegmentation2dNode"
+  EXECUTABLE
+  ${PROJECT_NAME}_instance_segmentation2d_exe)
+
 # semantic segmentation2d
 rclcpp_components_register_node(
   ${PROJECT_NAME}

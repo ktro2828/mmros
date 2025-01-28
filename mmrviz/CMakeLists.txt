@@ -36,6 +36,13 @@ rclcpp_components_register_node(
   "mmrviz::visualizer::Segmentation2dVisualizer"
   EXECUTABLE "segmentation2d_visualizer_exe")
 
+rclcpp_components_register_node(
+  ${PROJECT_NAME}_visualizer
+  PLUGIN
+  "mmrviz::visualizer::InstanceSegmentation2dVisualizer"
+  EXECUTABLE
+  "instance_segmentation2d_visualizer_exe")
+
 # --- 3D ---
 # boxes
 rclcpp_components_register_node(

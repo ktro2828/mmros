@@ -10,11 +10,14 @@ rosidl_generate_interfaces(
   "msg/Box3d.msg"
   "msg/BoxArray2d.msg"
   "msg/BoxArray3d.msg"
+  "msg/InstanceSegment2d.msg"
+  "msg/InstanceSegmentArray2d.msg"
   "msg/Edge.msg"
   "msg/Skeleton.msg"
   "msg/SkeletonArray.msg"
   DEPENDENCIES
   geometry_msgs
+  sensor_msgs
   std_msgs)
 
 ament_export_dependencies(rosidl_default_runtime)

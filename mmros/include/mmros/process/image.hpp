@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MMROS__PREPROCESS__IMAGE_HPP_
-#define MMROS__PREPROCESS__IMAGE_HPP_
+#ifndef MMROS__PROCESS__IMAGE_HPP_
+#define MMROS__PROCESS__IMAGE_HPP_
 
 #include <cublas_v2.h>
 #include <cuda.h>
@@ -21,7 +21,7 @@
 #include <cuda_runtime_api.h>
 #include <curand.h>
 
-namespace mmros::preprocess
+namespace mmros::process
 {
 struct Roi
 {
@@ -199,5 +199,5 @@ extern void multi_scale_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
 extern void argmax_gpu(
   unsigned char * dst, float * src, int d_w, int d_h, int s_w, int s_h, int s_c, int batch,
   cudaStream_t stream);
-}  // namespace mmros::preprocess
-#endif  // MMROS__PREPROCESS__IMAGE_HPP_
+}  // namespace mmros::process
+#endif  // MMROS__PROCESS__IMAGE_HPP_

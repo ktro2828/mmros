@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mmros/preprocess/image.hpp"
+#include "mmros/process/image.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,7 +21,7 @@
 
 #define MIN(x, y) x < y ? x : y
 
-namespace mmros::preprocess  // NOLINT
+namespace mmros::process  // NOLINT
 {
 constexpr size_t block = 512;
 
@@ -627,4 +627,4 @@ void argmax_gpu(
   argmax_gpu_kernel<<<cuda_gridsize(N), block, 0, stream>>>(
     N, dst, src, d_h, d_w, s_c, s_h, s_w, batch);
 }
-}  // namespace mmros::preprocess
+}  // namespace mmros::process

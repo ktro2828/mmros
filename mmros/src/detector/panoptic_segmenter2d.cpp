@@ -17,7 +17,7 @@
 #include "mmros/archetype/box.hpp"
 #include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
-#include "mmros/preprocess/image.hpp"
+#include "mmros/process/image.hpp"
 #include "mmros/tensorrt/cuda_check_error.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
 
@@ -185,7 +185,7 @@ void PanopticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
   CHECK_CUDA_ERROR(::cudaMemcpyAsync(
     std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
 
-  preprocess::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
+  process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
     3, batch_size, mean_d.get(), std_d.get(), stream_);
 
@@ -208,7 +208,7 @@ archetype::Result<outputs_type> PanopticSegmenter2D::postprocess(
   auto argmax_d =
     cuda::make_unique<unsigned char[]>(batch_size * num_segment * output_height * output_width);
 
-  preprocess::argmax_gpu(
+  process::argmax_gpu(
     argmax_d.get(), out_segments_d_.get(), output_width, output_height, output_width, output_height,
     num_segment, batch_size, stream_);
 

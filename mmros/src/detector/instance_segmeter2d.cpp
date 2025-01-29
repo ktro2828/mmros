@@ -16,7 +16,7 @@
 #include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
 #include "mmros/detector/instance_segmenter2d.hpp"
-#include "mmros/preprocess/image.hpp"
+#include "mmros/process/image.hpp"
 #include "mmros/tensorrt/cuda_check_error.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
 #include "mmros/tensorrt/tensorrt_common.hpp"
@@ -182,7 +182,7 @@ void InstanceSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
   CHECK_CUDA_ERROR(::cudaMemcpyAsync(
     std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
 
-  preprocess::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
+  process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
     3, batch_size, mean_d.get(), std_d.get(), stream_);
 

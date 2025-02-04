@@ -38,6 +38,7 @@ Following topics are published with the timestamp at the current ROS 2 simulatio
 | `/nuscenes/<LIDAR>/pointcloud`        |   `sensor_msgs/msg/PointCloud2`   | PointCloud data of each lidar.                                                                                    |
 | `/tf`                                 |     `tf2_msgs/msg/TFMessage`      | Transform of the ego vehicle.                                                                                     |
 | `/tf_static`                          |     `tf2_msgs/msg/TFMessage`      | Static transform of each sensor.                                                                                  |
+| `/nuscenes/vehicle/odometry`          |      `nav_msgs/msg/Odometry`      | Ego vehicle odometry.                                                                                             |
 | `/nuscenes/annotation/boxes`          |    `mmros_msgs/msg/BoxArray3d`    | 3D annotation boxes, which is published if `publish_annotation:=true`.                                            |
 | [TBD] `/nuscenes/annotation/lidarseg` |   `sensor_msgs/msg/PointCloud2`   | 3D annotation lidar segmentation pointcloud, which is published if `publish_annotation:=true` and files exist.    |
 | [TBD] `/nuscenes/annotation/panoptic` |   `sensor_msgs/msg/PointCloud2`   | 3D annotation panoptic segmentation pointcloud, which is published if `publish_annotation:=true` and files exist. |

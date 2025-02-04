@@ -23,6 +23,7 @@ import rclpy
 from builtin_interfaces.msg import Time
 from cv_bridge import CvBridge
 from geometry_msgs.msg import TransformStamped
+from nav_msgs.msg import Odometry
 from nuscenes import NuScenes
 from nuscenes.utils.data_classes import LidarPointCloud
 from rcl_interfaces.msg import ParameterDescriptor
@@ -157,6 +158,14 @@ class NuScenesPublisher(Node):
                 qos_profile=qos_profile,
             )
 
+        # odometry publisher
+        self._odomery_pub = self.create_publisher(
+            Odometry,
+            osp.join(self.TOPIC_NAMESPACE, "vehicle/odometry"),
+            qos_profile=qos_profile,
+        )
+        self._previous_ego_token: str | None = None
+
         # sensor data publishers: {channel: publisher}
         self._image_pubs: dict[str, Publisher] = {}
         self._cam_info_pubs: dict[str, Publisher] = {}
@@ -281,6 +290,7 @@ class NuScenesPublisher(Node):
                 self._current_sample_token = self._nusc.scene[self._current_scene_idx][
                     "first_sample_token"
                 ]
+                self._previous_ego_token = None
             else:
                 self._timer.cancel()
                 self.get_logger().info("Timer callback has been canceled.")
@@ -305,6 +315,54 @@ class NuScenesPublisher(Node):
             stamp=stamp,
             is_static=False,
         )
+
+        # publish odometry
+        odomery = Odometry()
+        odomery.header.frame_id = self.WORLD_FRAME_ID
+        odomery.header.stamp = stamp
+
+        # translation
+        tx, ty, tz = ego_record["translation"]
+        odomery.pose.pose.position.x = float(tx)
+        odomery.pose.pose.position.y = float(ty)
+        odomery.pose.pose.position.z = float(tz)
+
+        # rotation
+        qw, qx, qy, qz = ego_record["rotation"]
+        odomery.pose.pose.orientation.w = float(qw)
+        odomery.pose.pose.orientation.x = float(qx)
+        odomery.pose.pose.orientation.y = float(qy)
+        odomery.pose.pose.orientation.z = float(qz)
+
+        # velocity
+        vx, vy, vz = self._ego_velocity(current=ego_record)
+        odomery.twist.twist.linear.x = float(vx)
+        odomery.twist.twist.linear.y = float(vy)
+        odomery.twist.twist.linear.z = float(vz)
+
+        self._odomery_pub.publish(odomery)
+
+        self._previous_ego_token = ego_pose_token
+
+    def _ego_velocity(
+        self,
+        current: dict[str, Any],
+        max_time_diff: float = 1.5,
+    ) -> tuple[float, float, float]:
+        if self._previous_ego_token is None:
+            return (0.0, 0.0, 0.0)
+
+        previous = self._nusc.get("ego_pose", self._previous_ego_token)
+        previous_time = previous["timestamp"] * 1e-6
+        current_time = current["timestamp"] * 1e-6
+        time_diff = current_time - previous_time
+
+        if time_diff < max_time_diff:
+            px, py, pz = previous["translation"]
+            cx, cy, cz = current["translation"]
+            return (cx - px) / time_diff, (cy - py) / time_diff, (cz - pz) / time_diff
+        else:
+            return (0.0, 0.0, 0.0)
 
     def _publish_camera(self, sample_data: dict[str, Any], stamp: Time | None = None) -> None:
         """Publish camera record.

@@ -1,0 +1,20 @@
+# Panoptic Segmentation
+
+Panoptic segmentation task performs to estimate objects' 2D/3D semantic scene segment.
+
+## ONNX I/O Format
+
+Expected I/O data and their types are shown as below table.
+
+Note that I/O data are ordered from the top of the item in table.
+
+### 2D Instance Segmentation
+
+|  I/O  |   Shape   |  Type   | Description               |
+| :---: | :-------: | :-----: | ------------------------- |
+| Input | `Bx3xHxW` | `float` | Input camera image.       |
+|       | `Bx1xMxM` | `float` | Estimated scene segments. |
+
+### 3D Instance Segmentation
+
+TBD

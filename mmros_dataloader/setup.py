@@ -27,6 +27,7 @@ setup(
         "console_scripts": [
             f"{package_name}_nuscenes_exe = {package_name}.nuscenes:main",
             f"{package_name}_nuimages_exe = {package_name}.nuimages:main",
+            f"{package_name}_semantic_kitti_exe = {package_name}.semantic_kitti:main",
         ],
     },
 )

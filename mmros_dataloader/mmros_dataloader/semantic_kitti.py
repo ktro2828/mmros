@@ -19,6 +19,7 @@ from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header
 from tf2_ros import TransformBroadcaster
+from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 
 
 class SemanticKittiPublisher(Node):
@@ -60,8 +61,13 @@ class SemanticKittiPublisher(Node):
             .bool_value
         )
 
+        self._calibrations = self._load_calibrations(data_root=data_root, sequence=sequence)
         self._timestamps = self._load_timestamps(data_root=data_root, sequence=sequence)
-        self._poses = self._load_poses(data_root=data_root, sequence=sequence)
+        self._poses = self._load_poses(
+            data_root=data_root,
+            sequence=sequence,
+            calibration=np.vstack([self._calibrations["velodyne"], [0, 0, 0, 1]]),
+        )
         self._velodyne_paths = self._load_velodyne_paths(data_root=data_root, sequence=sequence)
 
         if len(self._timestamps) != len(self._poses) or len(self._timestamps) != len(
@@ -106,11 +112,33 @@ class SemanticKittiPublisher(Node):
 
         # tf
         self._tf_broadcaster = TransformBroadcaster(self)
+        self._static_tf_broadcaster = StaticTransformBroadcaster(self)
 
         self._timer = self.create_timer(
             timer_period_sec=self._timer_period_sec,
             callback=self.callback,
         )
+
+    @staticmethod
+    def _load_calibrations(data_root: str, sequence: str) -> dict[str, NDArray]:
+        name_map = {
+            "P0": "camera0",
+            "P1": "camera1",
+            "P2": "camera2",
+            "P3": "camera3",
+            "Tr": "velodyne",
+        }
+
+        calibrations_path = osp.join(data_root, "sequences", sequence, "calib.txt")
+
+        calibrations = {}
+        with open(calibrations_path, encoding="utf-8") as f:
+            lines = f.readlines()
+            for line in lines:
+                name, values = line.split(":")
+                matrix = np.fromstring(values, dtype=np.float64, sep=" ").reshape(-1, 4)
+                calibrations[name_map[name]] = matrix
+        return calibrations
 
     @staticmethod
     def _load_timestamps(data_root: str, sequence: str) -> list[float]:
@@ -119,30 +147,20 @@ class SemanticKittiPublisher(Node):
         timestamps_list = []
         with open(timestamps_path, encoding="utf-8") as timestamps_file:
             for line in timestamps_file:
-                number = float(line)
-                timestamps_list.append(number)
+                timestamps_list.append(float(line))
         return timestamps_list
 
     @staticmethod
-    def _load_poses(data_root: str, sequence: str) -> list[NDArray]:
+    def _load_poses(data_root: str, sequence: str, calibration: NDArray) -> list[NDArray]:
         poses_path = osp.join(data_root, "sequences", sequence, "poses.txt")
 
-        calibration = np.array(
-            [
-                [4.276802385584e-04, -9.999672484946e-01, -8.084491683471e-03, -1.198459927713e-02],
-                [-7.210626507497e-03, 8.081198471645e-03, -9.999413164504e-01, -5.403984729748e-02],
-                [9.999738645903e-01, 4.859485810390e-04, -7.206933692422e-03, -2.921968648686e-01],
-                [0, 0, 0, 1],
-            ]
-        )
         calibration_inv = np.linalg.inv(calibration)
 
         poses_list = []
         with open(poses_path, encoding="utf-8") as f:
             lines = f.readlines()
             for line in lines:
-                pose = np.fromstring(line, dtype=np.float64, sep=" ")
-                pose = pose.reshape(3, 4)
+                pose = np.fromstring(line, dtype=np.float64, sep=" ").reshape(3, 4)
                 pose = np.vstack((pose, [0, 0, 0, 1]))
                 poses_list.append(np.matmul(calibration_inv, np.matmul(pose, calibration)))
 

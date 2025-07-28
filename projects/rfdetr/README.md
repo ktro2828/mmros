@@ -1,1 +1,1 @@
-./docs/projects/rfdetr.md
+../../docs/projects/rfdetr.md

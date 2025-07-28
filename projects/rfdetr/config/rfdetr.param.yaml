@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    tensorrt:
+      onnx_path: $(var data_path)/rfdetr-base-static_560x560.onnx
+      precision: fp32
+    detector:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      box_format: xyxy
+      score_threshold: 0.5

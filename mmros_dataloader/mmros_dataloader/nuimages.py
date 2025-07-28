@@ -40,7 +40,7 @@ from mmros_msgs.msg import Box2d, BoxArray2d
 
 
 class NuImagesPublisher(Node):
-    """Publisher of NuImages."""
+    """Publisher for NuImages."""
 
     TOPIC_NAMESPACE = "/nuimages"
 
@@ -88,6 +88,7 @@ class NuImagesPublisher(Node):
     )
 
     def __init__(self) -> None:
+        """Initialize a node for NuImages."""
         super().__init__("nuimages")
 
         # cv bridge
@@ -440,7 +441,10 @@ class NuImagesPublisher(Node):
         self._cam_info_pubs[channel].publish(camera_info_msg)
 
     def _publish_boxes(
-        self, annotations: Sequence[dict[str, Any]], channel: str, stamp: Time | None = None
+        self,
+        annotations: Sequence[dict[str, Any]],
+        channel: str,
+        stamp: Time | None = None,
     ) -> None:
         """Publish annotation boxes.
 
@@ -520,6 +524,7 @@ class NuImagesPublisher(Node):
 
 
 def main(args=None) -> None:
+    """Run main process."""
     rclpy.init(args=args)
 
     node = NuImagesPublisher()

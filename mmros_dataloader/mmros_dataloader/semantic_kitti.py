@@ -23,12 +23,15 @@ from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 
 
 class SemanticKittiPublisher(Node):
+    """Publisher for SemanticKITTI."""
+
     TOPIC_NAMESPACE = "/semantic_kitti"
 
     EGO_FRAME_ID = "base_link"
     WORLD_FRAME_ID = "map"
 
     def __init__(self) -> None:
+        """Initialize a node for SemanticKITTI."""
         super().__init__("semantic_kitti")
 
         # parameters
@@ -175,6 +178,7 @@ class SemanticKittiPublisher(Node):
         return sorted(glob(osp.join(data_root, "sequences", sequence, "labels/*.label")))
 
     def callback(self) -> None:
+        """Timer callback."""
         timestamp = self._timestamps[self._current_frame_index]
 
         pose = self._poses[self._current_frame_index]
@@ -291,6 +295,7 @@ class SemanticKittiPublisher(Node):
 
 
 def main(args=None) -> None:
+    """Run main process."""
     rclpy.init(args=args)
 
     node = SemanticKittiPublisher()

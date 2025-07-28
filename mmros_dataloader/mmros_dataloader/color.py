@@ -18,6 +18,8 @@ import numpy as np
 
 
 class ColorMap:
+    """ColorMap class for managing color palettes."""
+
     COLORS = (
         np.array(
             [

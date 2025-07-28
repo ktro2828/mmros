@@ -1,1 +1,1 @@
-rtmdet.md
+../../docs/projects/rtmdet.md

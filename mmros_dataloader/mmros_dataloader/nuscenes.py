@@ -41,7 +41,7 @@ from mmros_msgs.msg import Box3d, BoxArray3d
 
 
 class NuScenesPublisher(Node):
-    """Publisher of NuScenes."""
+    """Publisher for NuScenes."""
 
     TOPIC_NAMESPACE = "/nuscenes"
 
@@ -89,6 +89,7 @@ class NuScenesPublisher(Node):
     )
 
     def __init__(self) -> None:
+        """Initialize a node for NuScenes."""
         super().__init__("nuscenes")
 
         # cv bridge
@@ -293,6 +294,7 @@ class NuScenesPublisher(Node):
                 self._previous_ego_token = None
             else:
                 self._timer.cancel()
+
                 self.get_logger().info("Timer callback has been canceled.")
 
                 self.destroy_node()
@@ -526,6 +528,7 @@ class NuScenesPublisher(Node):
 
 
 def main(args=None) -> None:
+    """Run main process."""
     rclpy.init(args=args)
 
     node = NuScenesPublisher()

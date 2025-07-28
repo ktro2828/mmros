@@ -23,11 +23,14 @@
 
 #include <opencv2/core/mat.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <utility>
 #include <vector>
 
 namespace mmros::detector
@@ -169,10 +172,11 @@ void PanopticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
     memcpy(img_buf_h.get() + index, &img.data[0], img.cols * img.rows * 3 * sizeof(unsigned char));
   }
 
-  CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-    img_buf_d.get(), img_buf_h.get(),
-    images[0].cols * images[0].rows * 3 * batch_size * sizeof(unsigned char),
-    ::cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(
+    ::cudaMemcpyAsync(
+      img_buf_d.get(), img_buf_h.get(),
+      images[0].cols * images[0].rows * 3 * batch_size * sizeof(unsigned char),
+      ::cudaMemcpyHostToDevice, stream_));
 
   // TODO(ktro2828): Refactoring not to load mean/std array every loop
   std::vector<float> mean_h(detector_config_->mean.begin(), detector_config_->mean.end());
@@ -180,10 +184,12 @@ void PanopticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
   auto mean_d = cuda::make_unique<float[]>(mean_h.size());
   auto std_d = cuda::make_unique<float[]>(std_h.size());
 
-  CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-    mean_d.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
-  CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-    std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(
+    ::cudaMemcpyAsync(
+      mean_d.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(
+    ::cudaMemcpyAsync(
+      std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
 
   process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
@@ -216,16 +222,19 @@ archetype::Result<outputs_type> PanopticSegmenter2D::postprocess(
   std::vector<int> out_labels(batch_size * num_detection);
   std::vector<unsigned char> out_segments(batch_size * num_segment * output_height * output_width);
   try {
-    CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-      out_boxes.data(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
-      ::cudaMemcpyDeviceToHost, stream_));
-    CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-      out_labels.data(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
-      ::cudaMemcpyDeviceToHost, stream_));
-    CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-      out_segments.data(), argmax_d.get(),
-      sizeof(unsigned char) * batch_size * 1 * output_height * output_width,
-      ::cudaMemcpyDeviceToHost, stream_));
+    CHECK_CUDA_ERROR(
+      ::cudaMemcpyAsync(
+        out_boxes.data(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
+        ::cudaMemcpyDeviceToHost, stream_));
+    CHECK_CUDA_ERROR(
+      ::cudaMemcpyAsync(
+        out_labels.data(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
+        ::cudaMemcpyDeviceToHost, stream_));
+    CHECK_CUDA_ERROR(
+      ::cudaMemcpyAsync(
+        out_segments.data(), argmax_d.get(),
+        sizeof(unsigned char) * batch_size * 1 * output_height * output_width,
+        ::cudaMemcpyDeviceToHost, stream_));
     CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
   } catch (const archetype::MmRosException & e) {
     return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());

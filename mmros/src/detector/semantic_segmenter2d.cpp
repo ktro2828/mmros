@@ -32,6 +32,7 @@
 #include <numeric>
 #include <optional>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace mmros::detector
@@ -159,10 +160,11 @@ void SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
     memcpy(img_buf_h.get() + index, &img.data[0], img.cols * img.rows * 3 * sizeof(unsigned char));
   }
 
-  CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-    img_buf_d.get(), img_buf_h.get(),
-    images[0].cols * images[0].rows * 3 * batch_size * sizeof(unsigned char),
-    ::cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(
+    ::cudaMemcpyAsync(
+      img_buf_d.get(), img_buf_h.get(),
+      images[0].cols * images[0].rows * 3 * batch_size * sizeof(unsigned char),
+      ::cudaMemcpyHostToDevice, stream_));
 
   // TODO(ktro2828): Refactoring not to load mean/std array every loop
   std::vector<float> mean_h(detector_config_->mean.begin(), detector_config_->mean.end());
@@ -170,10 +172,12 @@ void SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
   auto mean_d = cuda::make_unique<float[]>(mean_h.size());
   auto std_d = cuda::make_unique<float[]>(std_h.size());
 
-  CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-    mean_d.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
-  CHECK_CUDA_ERROR(::cudaMemcpyAsync(
-    std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(
+    ::cudaMemcpyAsync(
+      mean_d.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
+  CHECK_CUDA_ERROR(
+    ::cudaMemcpyAsync(
+      std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
 
   process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
@@ -193,9 +197,10 @@ archetype::Result<outputs_type> SemanticSegmenter2D::postprocess(
 
   std::vector<int> output_h(batch_size * 1 * output_width * output_height);
   try {
-    CHECK_CUDA_ERROR(::cudaMemcpy(
-      output_h.data(), output_d_.get(), sizeof(int) * batch_size * 1 * output_width * output_height,
-      ::cudaMemcpyDeviceToHost));
+    CHECK_CUDA_ERROR(
+      ::cudaMemcpy(
+        output_h.data(), output_d_.get(),
+        sizeof(int) * batch_size * 1 * output_width * output_height, ::cudaMemcpyDeviceToHost));
   } catch (const archetype::MmRosException & e) {
     return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }

@@ -128,15 +128,27 @@ void Detector2D::initCudaPtr(size_t batch_size)
 
   auto in_dims = trt_common_->getInputDims(0);
   const auto in_size = get_dim_size(in_dims);
-  input_d_ = cuda::make_unique<float[]>(in_size * batch_size);
+  if (!input_d_) {
+    input_d_ = cuda::make_unique<float[]>(in_size * batch_size);
+  } else {
+    cuda::clear_async(input_d_.get(), in_size * batch_size, stream_);
+  }
 
   auto out_dims0 = trt_common_->getOutputDims(0);
   const auto out_size0 = get_dim_size(out_dims0);
-  out_boxes_d_ = cuda::make_unique<float[]>(out_size0 * batch_size);
+  if (!out_boxes_d_) {
+    out_boxes_d_ = cuda::make_unique<float[]>(out_size0 * batch_size);
+  } else {
+    cuda::clear_async(out_boxes_d_.get(), out_size0 * batch_size, stream_);
+  }
 
   auto out_dims1 = trt_common_->getOutputDims(1);
   const auto out_size1 = get_dim_size(out_dims1);
-  out_labels_d_ = cuda::make_unique<int[]>(out_size1 * batch_size);
+  if (!out_labels_d_) {
+    out_labels_d_ = cuda::make_unique<int[]>(out_size1 * batch_size);
+  } else {
+    cuda::clear_async(out_labels_d_.get(), out_size1 * batch_size, stream_);
+  }
 }
 
 /// Execute preprocess.

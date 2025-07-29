@@ -48,24 +48,24 @@ SemanticSegmenter2D::SemanticSegmenter2D(
   const auto network_input_dims = trt_common_->getTensorShape(0);
   const auto batch_size = network_input_dims.d[0];
   const auto in_channel = network_input_dims.d[1];
-  const auto in_height = network_input_dims.d[2];
-  const auto in_width = network_input_dims.d[3];
+  in_height_ = network_input_dims.d[2];
+  in_width_ = network_input_dims.d[3];
 
   std::vector<tensorrt::ProfileDims> profile_dims;
   if (batch_size == -1) {
     // dynamic shape inference
     profile_dims = {
       {0,
-       {4, 1, in_channel, in_height, in_width},
-       {4, 5, in_channel, in_height, in_width},
-       {4, 10, in_channel, in_height, in_width}}};
+       {4, 1, in_channel, in_height_, in_width_},
+       {4, 5, in_channel, in_height_, in_width_},
+       {4, 10, in_channel, in_height_, in_width_}}};
   } else {
     // static shape inference
     profile_dims = {
       {0,
-       {4, batch_size, in_channel, in_height, in_width},
-       {4, batch_size, in_channel, in_height, in_width},
-       {4, batch_size, in_channel, in_height, in_width}}};
+       {4, batch_size, in_channel, in_height_, in_width_},
+       {4, batch_size, in_channel, in_height_, in_width_},
+       {4, batch_size, in_channel, in_height_, in_width_}}};
   }
 
   auto profile_dims_ptr = std::make_unique<std::vector<tensorrt::ProfileDims>>(profile_dims);
@@ -126,11 +126,19 @@ void SemanticSegmenter2D::initCudaPtr(size_t batch_size)
 
   auto in_dims = trt_common_->getInputDims(0);
   const auto in_size = get_dim_size(in_dims);
-  input_d_ = cuda::make_unique<float[]>(in_size * batch_size);
+  if (!input_d_) {
+    input_d_ = cuda::make_unique<float[]>(in_size * batch_size);
+  } else {
+    cuda::clear_async(input_d_.get(), in_size * batch_size, stream_);
+  }
 
   auto out_dims = trt_common_->getOutputDims(0);
   const auto out_size = get_dim_size(out_dims);
-  output_d_ = cuda::make_unique<int[]>(out_size * batch_size);
+  if (!output_d_) {
+    output_d_ = cuda::make_unique<int[]>(out_size * batch_size);
+  } else {
+    cuda::clear_async(output_d_.get(), out_size * batch_size, stream_);
+  }
 }
 
 void SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
@@ -142,8 +150,6 @@ void SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
   cuda::CudaUniquePtrHost<unsigned char[]> img_buf_h;
   cuda::CudaUniquePtr<unsigned char[]> img_buf_d;
 
-  const float input_height = static_cast<float>(in_dims.d[2]);
-  const float input_width = static_cast<float>(in_dims.d[3]);
   scales_.clear();
   for (auto b = 0; b < images.size(); ++b) {
     const auto & img = images.at(b);
@@ -152,7 +158,8 @@ void SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
         img.cols * img.rows * 3 * batch_size, cudaHostAllocWriteCombined);
       img_buf_d = cuda::make_unique<unsigned char[]>(img.cols * img.rows * 3 * batch_size);
     }
-    const float scale = std::min(input_width / img.cols, input_height / img.rows);
+    const float scale =
+      std::min(static_cast<float>(in_width_) / img.cols, static_cast<float>(in_height_) / img.rows);
     scales_.emplace_back(scale);
 
     int index = b * img.cols * img.rows * 3;
@@ -180,8 +187,8 @@ void SemanticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
       std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
 
   process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
-    input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
-    3, batch_size, mean_d.get(), std_d.get(), stream_);
+    input_d_.get(), img_buf_d.get(), in_width_, in_height_, 3, images[0].cols, images[0].rows, 3,
+    batch_size, mean_d.get(), std_d.get(), stream_);
 
   CHECK_CUDA_ERROR(cudaGetLastError());
 }

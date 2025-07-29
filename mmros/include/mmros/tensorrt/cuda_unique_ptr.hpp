@@ -76,5 +76,11 @@ CudaUniquePtrHost<T> make_unique_host(unsigned int flag = cudaHostAllocDefault)
   CHECK_CUDA_ERROR(::cudaHostAlloc(reinterpret_cast<void **>(&p), sizeof(T), flag));
   return CudaUniquePtrHost<T>{p};
 }
+
+template <typename T>
+void clear_async(T * ptr, std::size_t num_elem, cudaStream_t stream)
+{
+  CHECK_CUDA_ERROR(::cudaMemsetAsync(ptr, 0, sizeof(T) * num_elem, stream));
+}
 }  // namespace mmros::cuda
 #endif  // MMROS__TENSORRT__CUDA_UNIQUE_PTR_HPP_

@@ -57,7 +57,8 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_NAME} stdc++fs CUDA::cudart
-  ${OpenCV_LIBS} ${TENSORRT_LIBRARIES})
+  ${OpenCV_LIBS} ${TENSORRT_LIBRARIES}
+  ${CUDNN_LIBRARIES})
 
 ament_target_dependencies(
   ${PROJECT_NAME}

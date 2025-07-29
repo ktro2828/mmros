@@ -3,6 +3,8 @@
 #include "mmros/tensorrt/plugin/common/trt_cuda_helper.hpp"
 #include "mmros/tensorrt/plugin/gather_topk/gather_topk_kernel.hpp"
 
+#include <cstdint>
+
 namespace mmros::plugin  // NOLINT
 {
 template <typename scalar_t>
@@ -24,8 +26,8 @@ __global__ void gather_topk_kernel(
 
 template <typename scalar_t>
 void gather_topk_impl(
-  const scalar_t * input, const int * indices, const int * dims, int nbDims,
-  const int * indices_dims, int indice_nbDims, scalar_t * output, cudaStream_t stream)
+  const scalar_t * input, const int * indices, const int64_t * dims, int nbDims,
+  const int64_t * indices_dims, int indice_nbDims, scalar_t * output, cudaStream_t stream)
 {
   int batch = 1;
   for (int i = 0; i < indice_nbDims - 1; ++i) batch *= dims[i];
@@ -39,10 +41,10 @@ void gather_topk_impl(
 }
 
 template void gather_topk_impl<float>(
-  const float * input, const int * indices, const int * dims, int nbDims, const int * indices_dims,
-  int indice_nbDims, float * output, cudaStream_t stream);
+  const float * input, const int * indices, const int64_t * dims, int nbDims,
+  const int64_t * indices_dims, int indice_nbDims, float * output, cudaStream_t stream);
 
 template void gather_topk_impl<int32_t>(
-  const int32_t * input, const int * indices, const int * dims, int nbDims,
-  const int * indices_dims, int indice_nbDims, int32_t * output, cudaStream_t stream);
+  const int32_t * input, const int * indices, const int64_t * dims, int nbDims,
+  const int64_t * indices_dims, int indice_nbDims, int32_t * output, cudaStream_t stream);
 }  // namespace mmros::plugin

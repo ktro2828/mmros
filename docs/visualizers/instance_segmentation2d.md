@@ -1,4 +1,4 @@
-# `InstanceSegmentation2dVisualizer`
+# InstanceSegmentation2dVisualizer
 
 This node performs to visualize 2D instance segmentation on the image.
 

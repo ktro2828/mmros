@@ -1,4 +1,4 @@
-# Define Project Specific Node
+# Create Custom Projects
 
 As an example, let's create a new project package called `my_project` which deals with 2D detection task.
 

@@ -49,6 +49,14 @@ ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
 | Instance Segmentation | Camera   | [Instance RTMDet (ArXiv'2022)](./docs/projects/instance_rtmdet.md) |
 | Panoptic Segmentation | Camera   | [Panoptic FPN (CVPR'2019)](./docs/projects/panoptic_fpn.md)        |
 
+## User Guides
+
+- [😎 Supported Tasks](./docs/tasks/README.md)
+- [💻 How to Deploy ONNX from MMLab Projects](./docs/deploys/README.md)
+- [⚙️ Create Custom Projects](./docs/projects/README.md)
+- [📚 MMROS DataLoader](./docs/datasets/README.md)
+- [🖼️ MMRviz](./docs/visualizers/README.md)
+
 ## Contribution
 
 We are welcome your contribution!!

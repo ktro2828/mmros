@@ -1,4 +1,4 @@
-# `BoxArray2dVisualizer`
+# BoxArray2dVisualizer {#page}
 
 This node performs to visualize 2D bounding boxes on the image.
 

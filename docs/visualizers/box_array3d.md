@@ -1,4 +1,4 @@
-# `BoxArray3dVisualizer`
+# BoxArray3dVisualizer
 
 This performs to visualize 3D bounding boxes by projecting on the image.
 

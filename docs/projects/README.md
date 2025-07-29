@@ -82,6 +82,6 @@ Edit your parameter file, which is `projects/my_project/config/my_config.param.y
     detector:
       mean: [0.0, 0.0, 0.0]
       std: [1.0, 1.0, 1.0]
-      box_format: xyxy
+      box_format: XYXYS # [xmin, ymin, xmax, ymax, score]
       score_threshold: 0.2
 ```

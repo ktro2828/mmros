@@ -6,5 +6,5 @@
     detector:
       mean: [123.675, 116.28, 103.53]
       std: [58.395, 57.12, 57.375]
-      box_format: xyxy
+      box_format: XYXYS
       score_threshold: 0.2

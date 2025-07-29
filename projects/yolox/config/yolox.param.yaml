@@ -6,5 +6,5 @@
     detector:
       mean: [0.0, 0.0, 0.0]
       std: [1.0, 1.0, 1.0]
-      box_format: xyxy
+      box_format: XYXYS
       score_threshold: 0.2

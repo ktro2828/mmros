@@ -40,7 +40,8 @@ ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
 
 | Task                  | Modality | Model                                                              |
 | --------------------- | -------- | ------------------------------------------------------------------ |
-| Detection             | Camera   | [YOLOX (CVPR'2021)](./docs/projects/yolox.md)                      |
+| Detection             | Camera   | [DETR (ECCV'2020)](./docs/projects/detr.md)                        |
+|                       | Camera   | [YOLOX (CVPR'2021)](./docs/projects/yolox.md)                      |
 |                       | Camera   | [RTMDet (ArXiv'2022)](./docs/projects/rtmdet.md)                   |
 |                       | Camera   | [RF-DETR (ArXiv'2025)](./docs/projects/rfdetr.md)                  |
 | Semantic Segmentation | Camera   | [Mask2Former (CVPR'2022)](./docs/projects/mask2former.md)          |

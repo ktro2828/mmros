@@ -1,11 +1,10 @@
-# MMRViz
+# MMRViz {#mainpage}
 
 `mmrviz` features RViz plugins and visualizers for each topic used in MMROS.
 
 ## Supported RViz Plugins
 
-| Name | Description |
-| ---- | ----------- |
+TBD
 
 ## Supported Visualizers
 

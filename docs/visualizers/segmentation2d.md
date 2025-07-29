@@ -1,4 +1,4 @@
-# `Segmentation2dVisualizer`
+# Segmentation2dVisualizer
 
 This node performs to visualize 2D segmentation masks on the image.
 

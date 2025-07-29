@@ -17,6 +17,7 @@
 #include "mmros/archetype/box.hpp"
 #include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
+#include "mmros/detector/utility.hpp"
 #include "mmros/process/image.hpp"
 #include "mmros/tensorrt/cuda_check_error.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
@@ -48,24 +49,24 @@ Detector2D::Detector2D(
   const auto network_input_dims = trt_common_->getTensorShape(0);
   const auto batch_size = network_input_dims.d[0];
   const auto in_channel = network_input_dims.d[1];
-  const auto in_height = network_input_dims.d[2];
-  const auto in_width = network_input_dims.d[3];
+  in_height_ = network_input_dims.d[2];
+  in_width_ = network_input_dims.d[3];
 
   std::vector<tensorrt::ProfileDims> profile_dims;
   if (batch_size == -1) {
     // dynamic shape inference
     profile_dims = {
       {0,
-       {4, 1, in_channel, in_height, in_width},
-       {4, 5, in_channel, in_height, in_width},
-       {4, 10, in_channel, in_height, in_width}}};
+       {4, 1, in_channel, in_height_, in_width_},
+       {4, 5, in_channel, in_height_, in_width_},
+       {4, 10, in_channel, in_height_, in_width_}}};
   } else {
     // static shape inference
     profile_dims = {
       {0,
-       {4, batch_size, in_channel, in_height, in_width},
-       {4, batch_size, in_channel, in_height, in_width},
-       {4, batch_size, in_channel, in_height, in_width}}};
+       {4, batch_size, in_channel, in_height_, in_width_},
+       {4, batch_size, in_channel, in_height_, in_width_},
+       {4, batch_size, in_channel, in_height_, in_width_}}};
   }
 
   auto profile_dims_ptr = std::make_unique<std::vector<tensorrt::ProfileDims>>(profile_dims);
@@ -148,8 +149,6 @@ void Detector2D::preprocess(const std::vector<cv::Mat> & images)
   cuda::CudaUniquePtrHost<unsigned char[]> img_buf_h;
   cuda::CudaUniquePtr<unsigned char[]> img_buf_d;
 
-  const float input_height = static_cast<float>(in_dims.d[2]);
-  const float input_width = static_cast<float>(in_dims.d[3]);
   scales_.clear();
   for (auto b = 0; b < images.size(); ++b) {
     const auto & img = images.at(b);
@@ -158,7 +157,8 @@ void Detector2D::preprocess(const std::vector<cv::Mat> & images)
         img.cols * img.rows * 3 * batch_size, cudaHostAllocWriteCombined);
       img_buf_d = cuda::make_unique<unsigned char[]>(img.cols * img.rows * 3 * batch_size);
     }
-    const float scale = std::min(input_width / img.cols, input_height / img.rows);
+    const float scale =
+      std::min(static_cast<float>(in_width_) / img.cols, static_cast<float>(in_height_) / img.rows);
     scales_.emplace_back(scale);
 
     int index = b * img.cols * img.rows * 3;
@@ -186,8 +186,8 @@ void Detector2D::preprocess(const std::vector<cv::Mat> & images)
       std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
 
   process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
-    input_d_.get(), img_buf_d.get(), input_width, input_height, 3, images[0].cols, images[0].rows,
-    3, batch_size, mean_d.get(), std_d.get(), stream_);
+    input_d_.get(), img_buf_d.get(), in_width_, in_height_, 3, images[0].cols, images[0].rows, 3,
+    batch_size, mean_d.get(), std_d.get(), stream_);
 
   CHECK_CUDA_ERROR(cudaGetLastError());
 }
@@ -201,17 +201,26 @@ archetype::Result<outputs_type> Detector2D::postprocess(
   const auto out_dims = trt_common_->getOutputDims(0);
   const auto num_detection = static_cast<size_t>(out_dims.d[1]);
 
-  std::vector<float> out_boxes(batch_size * 5 * num_detection);
-  std::vector<int> out_labels(batch_size * num_detection);
+  size_t box_dim, class_dim;
+  if (archetype::include_score_in_box(detector_config_->box_format)) {
+    box_dim = 5;
+    class_dim = 1;
+  } else {
+    box_dim = 4;
+    class_dim = static_cast<size_t>(trt_common_->getOutputDims(1).d[2]);
+  }
+  std::vector<float> out_boxes(batch_size * num_detection * box_dim);
+  std::vector<int> out_labels(batch_size * num_detection * class_dim);
+
   try {
     CHECK_CUDA_ERROR(
       ::cudaMemcpyAsync(
-        out_boxes.data(), out_boxes_d_.get(), sizeof(float) * batch_size * 5 * num_detection,
+        out_boxes.data(), out_boxes_d_.get(), sizeof(float) * batch_size * num_detection * box_dim,
         ::cudaMemcpyDeviceToHost, stream_));
     CHECK_CUDA_ERROR(
       ::cudaMemcpyAsync(
-        out_labels.data(), out_labels_d_.get(), sizeof(int) * batch_size * num_detection,
-        ::cudaMemcpyDeviceToHost, stream_));
+        out_labels.data(), out_labels_d_.get(),
+        sizeof(int) * batch_size * num_detection * class_dim, ::cudaMemcpyDeviceToHost, stream_));
     CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
   } catch (const archetype::MmRosException & e) {
     return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
@@ -224,30 +233,18 @@ archetype::Result<outputs_type> Detector2D::postprocess(
     boxes.reserve(num_detection);
     const auto & scale = scales_.at(i);
     for (size_t j = 0; j < num_detection; ++j) {
-      const auto score = out_boxes[i * num_detection * 5 + j * 5 + 4];
-      if (score < detector_config_->score_threshold) {
+      const auto box_ptr = out_boxes.data() + (i * num_detection + j) * box_dim;
+      const auto label_ptr = out_labels.data() + (i * num_detection + j) * class_dim;
+
+      const auto box = to_box2d(
+        box_ptr, label_ptr, box_dim, class_dim, in_height_, in_width_, scale,
+        detector_config_->box_format);
+
+      if (box.score < detector_config_->score_threshold || box.label == -1) {
         continue;
       }
 
-      float xmin, ymin, xmax, ymax;
-      if (detector_config_->box_format == archetype::BoxFormat2D::XYXY) {
-        xmin = out_boxes[i * num_detection * 5 + j * 5] / scale;
-        ymin = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
-        xmax = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
-        ymax = out_boxes[i * num_detection * 5 + j * 5 + 3] / scale;
-      } else {
-        float cx = out_boxes[i * num_detection * 5 + j * 5] / scale;
-        float cy = out_boxes[i * num_detection * 5 + j * 5 + 1] / scale;
-        float width = out_boxes[i * num_detection * 5 + j * 5 + 2] / scale;
-        float height = out_boxes[i * num_detection * 5 + j * 5 + 3] / scale;
-        xmin = cx - 0.5 * width;
-        ymin = cy - 0.5 * height;
-        xmax = cx + 0.5 * width;
-        ymax = cy + 0.5 * height;
-      }
-
-      const auto label = out_labels[i * num_detection + j];
-      boxes.emplace_back(xmin, ymin, xmax, ymax, score, label);
+      boxes.emplace_back(box);
     }
     output.emplace_back(boxes);
   }

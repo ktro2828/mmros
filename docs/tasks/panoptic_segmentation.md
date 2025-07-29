@@ -10,13 +10,13 @@ Note that I/O data are ordered from the top of the item in table.
 
 ### 2D Instance Segmentation
 
-|  I/O   |   Shape   |   Type    | Description                                                                                        |
-| :----: | :-------: | :-------: | -------------------------------------------------------------------------------------------------- |
-| Input  | `Bx3xHxW` | `float[]` | Input camera image.                                                                                |
-| Output |  `BxNx5`  | `float[]` | Estimated bounding boxes in `(xmin, ymin, xmax, ymax, score)` or `(cx, cy, width, height, score)`. |
-|        |   `BxN`   |  `int[]`  | Estimated labels.                                                                                  |
-|        | `BxNxMxM` | `float[]` | Estimated instance segments for each object.                                                       |
-|        | `Bx1xMxM` | `float[]` | Estimated scene segments.                                                                          |
+|  I/O   |   Shape   |   Type    | Description                                  |
+| :----: | :-------: | :-------: | -------------------------------------------- |
+| Input  | `Bx3xHxW` | `float[]` | Input camera image.                          |
+| Output |  `BxNxD`  | `float[]` | Estimated bounding boxes.                    |
+|        |  `BxNxC`  |  `int[]`  | Estimated labels.                            |
+|        | `BxNxMxM` | `float[]` | Estimated instance segments for each object. |
+|        | `Bx1xMxM` | `float[]` | Estimated scene segments.                    |
 
 ### 3D Instance Segmentation
 

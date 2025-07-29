@@ -15,6 +15,10 @@
 #ifndef MMROS__ARCHETYPE__BOX_HPP_
 #define MMROS__ARCHETYPE__BOX_HPP_
 
+#include "mmros/archetype/exception.hpp"
+
+#include <algorithm>
+#include <string>
 #include <vector>
 
 namespace mmros::archetype
@@ -23,9 +27,73 @@ namespace mmros::archetype
  * @brief An enum representing 2D box format.
  */
 enum class BoxFormat2D {
-  XYXY = 0,  //!< (xmin, ymin, xmax, ymax) order.
-  XYWH = 1   //!< (cx, cy, width, height) order.
+  XYXY = 0,        //!< (xmin, ymin, xmax, ymax) order.
+  XYWH = 1,        //!< (cx, cy, width, height) order.
+  XYXYS = 2,       //!< (xmin, ymin, xmax, ymax, score) order.
+  XYWHS = 3,       //!< (cx, cy, width, height, score) order.
+  XYXY_NORM = 4,   //!< (xmin, ymin, xmax, ymax) order normalized.
+  XYWH_NORM = 5,   //!< (cx, cy, width, height) order normalized.
+  XYXYS_NORM = 6,  //!< (xmin, ymin, xmax, ymax, score) order normalized.
+  XYWHS_NORM = 7,  //!< (cx, cy, width, height, score) order normalized.
 };
+
+/**
+ * @brief Check whether the output box format is xyxy order.
+ *
+ * @param format Box format.
+ * @return bool Returns `true` if the `format` is the one of (`XYXY`, `XYXYS`, `XYXY_NORM`,
+ * `XYXYS_NORM`).
+ */
+inline bool is_box_xyxy(BoxFormat2D format)
+{
+  return format == BoxFormat2D::XYXY || format == BoxFormat2D::XYXYS ||
+         format == BoxFormat2D::XYXY_NORM || format == BoxFormat2D::XYXYS_NORM;
+}
+
+/**
+ * @brief Check whether the box format indicates the score feature is included in the output box.
+ *
+ * @param format Box format.
+ * @return bool Returns `true` if the `format` is the one of (`XYXYS`, `XYWHS`, `XYXYS_NORM`,
+ * `XYWHS_NORM`).
+ */
+inline bool include_score_in_box(BoxFormat2D format)
+{
+  return format == BoxFormat2D::XYXYS || format == BoxFormat2D::XYWHS ||
+         format == BoxFormat2D::XYXYS_NORM || format == BoxFormat2D::XYWHS_NORM;
+}
+
+/**
+ * @brief Check whether the output box is normalized.
+ *
+ * @param format Box format.
+ * @return bool Returns `true` if the `format` is the one of (`XYXY_NORM`, `XYWH_NORM`,
+ * `XYXYS_NORM`, `XYWHS_NORM`).
+ */
+inline bool is_box_normalized(BoxFormat2D format)
+{
+  return format == BoxFormat2D::XYXY_NORM || format == BoxFormat2D::XYWH_NORM ||
+         format == BoxFormat2D::XYXYS_NORM || format == BoxFormat2D::XYWHS_NORM;
+}
+
+/**
+ * @brief Convert `std::string` to `BoxFormat2D`.
+ *
+ * @param format_str Format in string.
+ * @return BoxFormat2D Returns the correponding box format.
+ */
+inline BoxFormat2D to_box_format2d(const std::string & format_str)
+{
+  if (format_str == "XYXY") return BoxFormat2D::XYXY;
+  if (format_str == "XYXYS") return BoxFormat2D::XYXYS;
+  if (format_str == "XYWH") return BoxFormat2D::XYWH;
+  if (format_str == "XYWHS") return BoxFormat2D::XYWHS;
+  if (format_str == "XYXY_NORM") return BoxFormat2D::XYXY_NORM;
+  if (format_str == "XYWH_NORM") return BoxFormat2D::XYWH_NORM;
+  if (format_str == "XYXYS_NORM") return BoxFormat2D::XYXYS_NORM;
+  if (format_str == "XYWHS_NORM") return BoxFormat2D::XYWHS_NORM;
+  throw MmRosException(MmRosError_t::INVALID_VALUE, "Unexpected box format: " + format_str);
+}
 
 /**
  * @brief A class for 2D bounding box.

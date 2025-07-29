@@ -102,9 +102,12 @@ private:
 
   std::vector<float> scales_;             //!< Image scales for each batch.
   cuda::CudaUniquePtr<float[]> input_d_;  //!< Input image pointer on the device. [B, 3, H, W].
+  int64_t in_height_;                     //!< Model input height.
+  int64_t in_width_;                      //!< Model input width.
 
-  cuda::CudaUniquePtr<float[]> out_boxes_d_;  //!< Output detection pointer on device [B, N, 5].
-  cuda::CudaUniquePtr<int[]> out_labels_d_;   //!< Output label pointer on the device [B, N].
+  cuda::CudaUniquePtr<float[]> out_boxes_d_;  //!< Output detection pointer on device [B, N, D].
+  cuda::CudaUniquePtr<int[]>
+    out_labels_d_;  //!< Output label pointer on the device [B, N] or [B, N, C].
 };
 }  // namespace mmros::detector
 #endif  // MMROS__DETECTOR__DETECTOR2D_HPP_

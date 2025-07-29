@@ -100,6 +100,8 @@ private:
 
   std::vector<float> scales_;             //!< Image scales for each batch.
   cuda::CudaUniquePtr<float[]> input_d_;  //!< Input image pointer on the device. [B, 3, H, W].
+  int64_t in_height_;                     //!< Model input height.
+  int64_t in_width_;                      //!< Model input width.
 
   cuda::CudaUniquePtr<float[]> out_boxes_d_;  //!< Output boxes pointer on the device. [B, N, 5].
   cuda::CudaUniquePtr<int[]> out_labels_d_;   //!< Output labels pointer on the device. [B, N].

@@ -24,9 +24,10 @@ namespace mmros::archetype
  * @brief An enumerate to represent error kind.
  */
 enum MmRosError_t {
-  TENSORRT,  //!< TensorRT related error.
-  CUDA,      //!< CUDA related error.
-  UNKNOWN,   //!< Unknown error.
+  TENSORRT,       //!< TensorRT related error.
+  CUDA,           //!< CUDA related error.
+  INVALID_VALUE,  //!< Invalud value error.
+  UNKNOWN,        //!< Unknown error.
 };
 
 /**
@@ -95,6 +96,8 @@ private:
       case MmRosError_t::CUDA:
         msg_ = "[CUDA]: " + error_.msg;
         break;
+      case MmRosError_t::INVALID_VALUE:
+        msg_ = "[INVALID_VALUE:" + error_.msg;
       default:
         msg_ = "[UNKNOWN]: " + error_.msg;
     }

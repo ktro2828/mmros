@@ -7,6 +7,7 @@
 #include <NvInferRuntime.h>
 
 #include <cassert>
+#include <string>
 
 namespace mmros::plugin
 {
@@ -90,10 +91,10 @@ int GatherTopk::enqueue(
   const void * const * inputs, void * const * outputs, void * workSpace,
   cudaStream_t stream) TRT_NOEXCEPT
 {
-  const int * dims = &(inputDesc[0].dims.d[0]);
-  const int * indices_dims = &(inputDesc[1].dims.d[0]);
-  int nbDims = inputDesc[0].dims.nbDims;
-  int indice_nbDims = inputDesc[1].dims.nbDims;
+  const auto * dims = &(inputDesc[0].dims.d[0]);
+  const auto * indices_dims = &(inputDesc[1].dims.d[0]);
+  auto nbDims = inputDesc[0].dims.nbDims;
+  auto indice_nbDims = inputDesc[1].dims.nbDims;
 
   const void * data = inputs[0];
   const void * indices = inputs[1];

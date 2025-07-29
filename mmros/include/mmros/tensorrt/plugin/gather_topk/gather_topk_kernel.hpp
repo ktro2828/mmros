@@ -4,6 +4,8 @@
 
 #include <cuda_runtime.h>
 
+#include <cstdint>
+
 namespace mmros::plugin
 {
 /**
@@ -23,7 +25,7 @@ namespace mmros::plugin
  */
 template <typename scalar_t>
 extern void gather_topk_impl(
-  const scalar_t * input, const int * indices, const int * dims, int nbDims,
-  const int * indices_dims, int indice_nbDims, scalar_t * output, cudaStream_t stream);
+  const scalar_t * input, const int * indices, const int64_t * dims, int nbDims,
+  const int64_t * indices_dims, int indice_nbDims, scalar_t * output, cudaStream_t stream);
 }  // namespace mmros::plugin
 #endif  // MMROS__TENSORRT__PLUGIN__GATHER_TOPK__GATHER_TOPK_KERNEL_HPP_

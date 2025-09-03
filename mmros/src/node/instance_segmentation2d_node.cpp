@@ -17,17 +17,11 @@
 #include "mmros/archetype/box.hpp"
 #include "mmros/archetype/exception.hpp"
 #include "mmros/detector/instance_segmenter2d.hpp"
+#include "mmros/node/single_camera_node.hpp"
 #include "mmros/tensorrt/utility.hpp"
 
-#include <image_transport/image_transport.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
-#include <rclcpp/create_timer.hpp>
-#include <rclcpp/logging.hpp>
-#include <rclcpp/node.hpp>
-#include <rclcpp/node_options.hpp>
-#include <rclcpp/qos.hpp>
-#include <rclcpp/utilities.hpp>
 
 #include <mmros_msgs/msg/box2d.hpp>
 #include <mmros_msgs/msg/detail/instance_segment2d__struct.hpp>
@@ -36,11 +30,9 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <cstddef>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,7 +40,7 @@
 namespace mmros::node
 {
 InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions & options)
-: rclcpp::Node("instance_segmentation2d", options)
+: SingleCameraNode("instance_segmentation2d", options)
 {
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
@@ -65,12 +57,13 @@ InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions
   }
 
   {
-    // TODO(ktro2828): Subscribe and publish for multiple images.
     using std::chrono_literals::operator""ms;
+    using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
-    timer_ = rclcpp::create_timer(
-      this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+    timer_ = create_wall_timer(100ms, [this, use_raw]() {
+      this->onConnect(std::bind(&InstanceSegmentation2dNode::onImage, this, _1), use_raw);
+    });
 
     pub_segment_ =
       create_publisher<mmros_msgs::msg::InstanceSegmentArray2d>("~/output/segments", 1);
@@ -82,41 +75,7 @@ InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions
   }
 }
 
-void InstanceSegmentation2dNode::onConnect(bool use_raw)
-{
-  using std::placeholders::_1;
-
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
-
-  const auto image_topic = resolve_topic_name("~/input/image");
-  auto image_topic_for_qos_query = image_topic;
-  if (!use_raw) {
-    image_topic_for_qos_query += "/compressed";
-  }
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
-  if (image_qos) {
-    const auto transport = use_raw ? "raw" : "compressed";
-    sub_ = image_transport::create_subscription(
-      this, image_topic, std::bind(&InstanceSegmentation2dNode::onImage, this, _1), transport,
-      image_qos->get_rmw_qos_profile());
-
-    timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> InstanceSegmentation2dNode::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return {};
-  } else {
-    return publisher_info[0].qos_profile();
-  }
-}
-
-void InstanceSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
+void InstanceSegmentation2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
   cv_bridge::CvImagePtr in_image_ptr;
   try {

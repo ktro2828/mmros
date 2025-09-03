@@ -25,14 +25,15 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <optional>
+#include <chrono>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace mmros::node
 {
 SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions & options)
-: rclcpp::Node("semantic_segmentation2d", options)
+: SingleCameraNode("semantic_segmentation2d", options)
 {
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
@@ -46,12 +47,13 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
   }
 
   {
-    // TODO(ktro2828): Subscribe and publish for multiple images.
     using std::chrono_literals::operator""ms;
+    using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
-    timer_ = rclcpp::create_timer(
-      this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+    timer_ = rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() {
+      this->onConnect(std::bind(&SemanticSegmentation2dNode::onImage, this, _1), use_raw);
+    });
 
     pub_ = create_publisher<sensor_msgs::msg::Image>("~/output/mask", 1);
   }
@@ -59,41 +61,6 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
   if (declare_parameter<bool>("build_only")) {
     RCLCPP_INFO(get_logger(), "TensorRT engine file is built and exit.");
     rclcpp::shutdown();
-  }
-}
-
-void SemanticSegmentation2dNode::onConnect(bool use_raw)
-{
-  using std::placeholders::_1;
-
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
-
-  const auto image_topic = resolve_topic_name("~/input/image");
-  auto image_topic_for_qos_query = image_topic;
-  if (!use_raw) {
-    image_topic_for_qos_query += "/compressed";
-  }
-
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
-  if (image_qos) {
-    const auto transport = use_raw ? "raw" : "compressed";
-    sub_ = image_transport::create_subscription(
-      this, image_topic, std::bind(&SemanticSegmentation2dNode::onImage, this, _1), transport,
-      image_qos->get_rmw_qos_profile());
-
-    timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> SemanticSegmentation2dNode::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return {};
-  } else {
-    return publisher_info[0].qos_profile();
   }
 }
 

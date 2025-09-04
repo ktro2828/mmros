@@ -16,6 +16,8 @@
 
 #include <image_transport/image_transport.hpp>
 
+#include <glog/logging.h>
+
 #include <string>
 
 namespace mmros::node
@@ -23,6 +25,8 @@ namespace mmros::node
 SingleCameraNode::SingleCameraNode(const std::string & name, const rclcpp::NodeOptions & options)
 : rclcpp::Node(name)
 {
+  google::InitGoogleLogging(name.c_str());
+  google::InstallFailureSignalHandler();
 }
 
 void SingleCameraNode::onConnect(

@@ -61,7 +61,7 @@ InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions
     using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
-    timer_ = create_wall_timer(100ms, [this, use_raw]() {
+    timer_ = create_timer(this, get_clock(), 100ms, [this, use_raw]() {
       this->onConnect(std::bind(&InstanceSegmentation2dNode::onImage, this, _1), use_raw);
     });
 

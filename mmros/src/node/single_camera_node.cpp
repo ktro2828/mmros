@@ -44,6 +44,10 @@ void SingleCameraNode::onConnect(
     const auto transport = use_raw ? "raw" : "compressed";
     subscription_ = image_transport::create_subscription(
       this, image_topic, callback, transport, image_qos->get_rmw_qos_profile());
+
+    if (connection_timer_) {
+      connection_timer_->cancel();
+    }
   }
 }
 

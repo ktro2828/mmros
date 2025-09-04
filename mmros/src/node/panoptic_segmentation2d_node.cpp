@@ -55,7 +55,7 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
     using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
-    timer_ = rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() {
+    connection_timer_ = rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() {
       this->onConnect(std::bind(&PanopticSegmentation2dNode::onImage, this, _1), use_raw);
     });
 

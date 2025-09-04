@@ -45,6 +45,9 @@ public:
   void onConnect(
     const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
 
+protected:
+  rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
+
 private:
   /**
    * @brief Return QoS of the specified topic.

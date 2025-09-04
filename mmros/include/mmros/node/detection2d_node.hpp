@@ -46,7 +46,6 @@ public:
   virtual void onImage(sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
-  rclcpp::TimerBase::SharedPtr timer_;                             //!< Topic connection timer.
   std::unique_ptr<detector::Detector2D> detector_;                 //!< TensorRT detector.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_;  //!< Output publisher.
 };

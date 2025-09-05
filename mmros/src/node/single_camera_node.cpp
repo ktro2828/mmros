@@ -47,6 +47,9 @@ void SingleCameraNode::onConnect(
 
     if (connection_timer_) {
       connection_timer_->cancel();
+      RCLCPP_INFO(
+        get_logger(), "Successfully subscribed to %s, connection timer canceled",
+        image_topic.c_str());
     }
   }
 }

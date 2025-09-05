@@ -56,8 +56,12 @@ target_include_directories(
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
 target_link_libraries(
-  ${PROJECT_NAME} stdc++fs CUDA::cudart
-  ${OpenCV_LIBS} ${TENSORRT_LIBRARIES}
+  ${PROJECT_NAME}
+  stdc++fs
+  glog::glog
+  CUDA::cudart
+  ${OpenCV_LIBS}
+  ${TENSORRT_LIBRARIES}
   ${CUDNN_LIBRARIES})
 
 ament_target_dependencies(

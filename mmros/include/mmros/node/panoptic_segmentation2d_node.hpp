@@ -16,24 +16,21 @@
 #define MMROS__NODE__PANOPTIC_SEGMENTATION2D_NODE_HPP_
 
 #include "mmros/detector/panoptic_segmenter2d.hpp"
+#include "mmros/node/single_camera_node.hpp"
 
-#include <image_transport/subscriber.hpp>
-#include <rclcpp/qos.hpp>
 #include <rclcpp/timer.hpp>
 
 #include <mmros_msgs/msg/box_array2d.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
-#include <optional>
-#include <string>
 
 namespace mmros::node
 {
 /**
  * @brief A ROS 2 node class for 2D panoptic segmenter.
  */
-class PanopticSegmentation2dNode : public rclcpp::Node
+class PanopticSegmentation2dNode : public SingleCameraNode
 {
 public:
   /**
@@ -51,25 +48,7 @@ public:
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
-  /**
-   * @brief Check node connection and start subscribing.
-   *
-   * @param use_raw Indicates whether to use raw image.
-   */
-  void onConnect(bool use_raw);
-
-  /**
-   * @brief Return QoS of the specified topic.
-   *
-   * If it fails to load the specified QoS, returns `std::nullopt`.
-   *
-   * @param query_topic Topic name.
-   */
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
-
-  rclcpp::TimerBase::SharedPtr timer_;                       //!< Timer.
-  std::unique_ptr<detector::PanopticSegmenter2D> detector_;  //!< TensorRT detector.
-  image_transport::Subscriber sub_;                          //!< Input image subscription.
+  std::unique_ptr<detector::PanopticSegmenter2D> detector_;            //!< TensorRT detector.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_box_;  //!< Output box publisher.
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_mask_;     //!< Output mask publisher.
 };

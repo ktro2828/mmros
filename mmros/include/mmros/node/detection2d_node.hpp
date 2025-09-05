@@ -16,25 +16,19 @@
 #define MMROS__NODE__DETECTION2D_NODE_HPP_
 
 #include "mmros/detector/detector2d.hpp"
-
-#include <image_transport/subscriber.hpp>
-#include <rclcpp/qos.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/timer.hpp>
+#include "mmros/node/single_camera_node.hpp"
 
 #include <mmros_msgs/msg/box_array2d.hpp>
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
-#include <optional>
-#include <string>
 
 namespace mmros::node
 {
 /**
  * @brief A ROS 2 node class for 2D box detector.
  */
-class Detection2dNode : public rclcpp::Node
+class Detection2dNode : public SingleCameraNode
 {
 public:
   /**
@@ -49,28 +43,10 @@ public:
    *
    * @param msg Input image message.
    */
-  virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
+  virtual void onImage(sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
-  /**
-   * @brief Check node connection and start subscribing.
-   *
-   * @param use_raw Indicates whether to use raw image.
-   */
-  void onConnect(bool use_raw);
-
-  /**
-   * @brief Return QoS of the specified topic.
-   *
-   * If it fails to load the specified QoS, returns `std::nullopt`.
-   *
-   * @param query_topic Topic name.
-   */
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
-
-  rclcpp::TimerBase::SharedPtr timer_;                             //!< Timer.
   std::unique_ptr<detector::Detector2D> detector_;                 //!< TensorRT detector.
-  image_transport::Subscriber sub_;                                //!< Input image subscription.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_;  //!< Output publisher.
 };
 }  // namespace mmros::node

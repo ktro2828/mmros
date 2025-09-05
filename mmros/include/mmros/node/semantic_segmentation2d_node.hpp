@@ -16,24 +16,18 @@
 #define MMROS__NODE__SEMANTIC_SEGMENTATION2D_NODE_HPP_
 
 #include "mmros/detector/semantic_segmenter2d.hpp"
-
-#include <image_transport/subscriber.hpp>
-#include <rclcpp/qos.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/timer.hpp>
+#include "mmros/node/single_camera_node.hpp"
 
 #include <sensor_msgs/msg/image.hpp>
 
 #include <memory>
-#include <optional>
-#include <string>
 
 namespace mmros::node
 {
 /**
  * @brief A ROS 2 node class for 2D semantic segmenter.
  */
-class SemanticSegmentation2dNode : public rclcpp::Node
+class SemanticSegmentation2dNode : public SingleCameraNode
 {
 public:
   /**
@@ -51,25 +45,7 @@ public:
   virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
 
 private:
-  /**
-   * @brief Check node connection and start subscribing.
-   *
-   * @param use_raw Indicates whether to use raw image.
-   */
-  void onConnect(bool use_raw);
-
-  /**
-   * @brief Return QoS of the specified topic.
-   *
-   * If it fails to load the specified QoS, returns `std::nullopt`.
-   *
-   * @param query_topic Topic name.
-   */
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
-
-  rclcpp::TimerBase::SharedPtr timer_;                         //!< Timer.
   std::unique_ptr<detector::SemanticSegmenter2D> detector_;    //!< TensorRT detector.
-  image_transport::Subscriber sub_;                            //!< Input image subscription.
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;  //!< Output publisher.
 };
 }  // namespace mmros::node

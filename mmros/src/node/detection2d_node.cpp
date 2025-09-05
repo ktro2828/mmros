@@ -28,6 +28,7 @@
 
 #include <cv_bridge/cv_bridge.h>
 
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -37,7 +38,7 @@
 namespace mmros::node
 {
 Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
-: rclcpp::Node("detection2d", options)
+: SingleCameraNode("detector2d", options)
 {
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
@@ -54,12 +55,13 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
   }
 
   {
-    // TODO(ktro2828): Subscribe and publish for multiple images.
     using std::chrono_literals::operator""ms;
+    using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
-    timer_ = rclcpp::create_timer(
-      this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+    connection_timer_ = rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() {
+      this->onConnect(std::bind(&Detection2dNode::onImage, this, _1), use_raw);
+    });
 
     pub_ = create_publisher<mmros_msgs::msg::BoxArray2d>("~/output/boxes", 1);
   }
@@ -70,41 +72,7 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
   }
 }
 
-void Detection2dNode::onConnect(bool use_raw)
-{
-  using std::placeholders::_1;
-
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
-
-  const auto image_topic = resolve_topic_name("~/input/image");
-  auto image_topic_for_qos_query = image_topic;
-  if (!use_raw) {
-    image_topic_for_qos_query += "/compressed";
-  }
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
-  if (image_qos) {
-    const auto transport = use_raw ? "raw" : "compressed";
-    sub_ = image_transport::create_subscription(
-      this, image_topic, std::bind(&Detection2dNode::onImage, this, _1), transport,
-      image_qos->get_rmw_qos_profile());
-
-    timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> Detection2dNode::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return {};
-  } else {
-    return publisher_info[0].qos_profile();
-  }
-}
-
-void Detection2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
+void Detection2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
   cv_bridge::CvImagePtr in_image_ptr;
   try {

@@ -14,6 +14,8 @@
 
 #include "mmros/node/single_camera_node.hpp"
 
+#include "mmros/node/utility.hpp"
+
 #include <image_transport/image_transport.hpp>
 
 #include <glog/logging.h>
@@ -38,7 +40,7 @@ void SingleCameraNode::onConnect(
 
   const auto image_topic = resolve_topic_name("~/input/image");
 
-  const auto image_qos = getTopicQos(use_raw ? image_topic : image_topic + "/compressed");
+  const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
     subscription_ = image_transport::create_subscription(
       this, image_topic, callback, use_raw ? "raw" : "compressed",
@@ -50,16 +52,6 @@ void SingleCameraNode::onConnect(
         get_logger(), "Successfully subscribed to %s, connection timer canceled",
         image_topic.c_str());
     }
-  }
-}
-
-std::optional<rclcpp::QoS> SingleCameraNode::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return std::nullopt;
-  } else {
-    return publisher_info[0].qos_profile();
   }
 }
 }  // namespace mmros::node

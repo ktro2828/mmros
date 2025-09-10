@@ -14,6 +14,8 @@
 
 #include "mmros/node/multi_camera_node.hpp"
 
+#include "mmros/node/utility.hpp"
+
 #include <image_transport/image_transport.hpp>
 
 #include <glog/logging.h>
@@ -54,7 +56,7 @@ bool MultiCameraNode::onConnectForSingleCamera(
   const std::string & image_topic,
   const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw)
 {
-  const auto image_qos = getTopicQos(use_raw ? image_topic : image_topic + "/compressed");
+  const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
     rclcpp::SubscriptionOptions options;
     options.callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
@@ -70,15 +72,4 @@ bool MultiCameraNode::onConnectForSingleCamera(
     return false;
   }
 }
-
-std::optional<rclcpp::QoS> MultiCameraNode::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return std::nullopt;
-  } else {
-    return publisher_info[0].qos_profile();
-  }
-}
-
 }  // namespace mmros::node

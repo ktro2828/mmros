@@ -37,13 +37,12 @@ void SingleCameraNode::onConnect(
   };
 
   const auto image_topic = resolve_topic_name("~/input/image");
-  const auto image_topic_for_qos_query = use_raw ? image_topic : image_topic + "/compressed";
 
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
+  const auto image_qos = getTopicQos(use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
-    const auto transport = use_raw ? "raw" : "compressed";
     subscription_ = image_transport::create_subscription(
-      this, image_topic, callback, transport, image_qos->get_rmw_qos_profile());
+      this, image_topic, callback, use_raw ? "raw" : "compressed",
+      image_qos->get_rmw_qos_profile());
 
     if (connection_timer_) {
       connection_timer_->cancel();

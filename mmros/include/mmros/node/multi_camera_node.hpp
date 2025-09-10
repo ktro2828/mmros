@@ -12,46 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MMROS__NODE__SINGLE_CAMERA_NODE_HPP_
-#define MMROS__NODE__SINGLE_CAMERA_NODE_HPP_
+#ifndef MMROS__NODE__MULTI_CAMERA_NODE_HPP_
+#define MMROS__NODE__MULTI_CAMERA_NODE_HPP_
 
 #include <image_transport/subscriber.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
 
+#include <functional>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace mmros::node
 {
 /**
- * @brief SingleCameraNode class for subscribing to a single image topic.
+ * @brief MultiCameraNode class for subscribing to multiple image topics.
  */
-class SingleCameraNode : public rclcpp::Node
+class MultiCameraNode : public rclcpp::Node
 {
 public:
   /**
-   * @brief Construct a new SingleCameraNode object.
+   * @brief Constructor for MultiCameraNode.
    *
-   * @param name Node name.
+   * @param name Name of the node.
    * @param options Node options.
    */
-  SingleCameraNode(const std::string & name, const rclcpp::NodeOptions & options);
+  MultiCameraNode(const std::string & name, const rclcpp::NodeOptions & options);
 
   /**
-   * @brief Check node connection and start subscribing.
+   * @brief Connect to multiple image topics.
    *
-   * @param callback Callback function.
-   * @param use_raw Indicates whether to use raw image.
+   * @param image_topics Vector of image topic names.
+   * @param callback Callback function to be called when a new image is received.
+   * @param use_raw Whether to use raw images or not.
    */
   void onConnect(
+    const std::vector<std::string> & image_topics,
     const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
 
 protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:
+  bool onConnectForSingleCamera(
+    const std::string & image_topic,
+    const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
+
   /**
    * @brief Return QoS of the specified topic.
    *
@@ -61,7 +69,7 @@ private:
    */
   std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
-  image_transport::Subscriber subscription_;  //!< Image subscription.
+  std::vector<image_transport::Subscriber> subscriptions_;  //!< Subscribers for each camera topic.
 };
 }  // namespace mmros::node
-#endif  // MMROS__NODE__SINGLE_CAMERA_NODE_HPP_
+#endif  // MMROS__NODE__MULTI_CAMERA_NODE_HPP_

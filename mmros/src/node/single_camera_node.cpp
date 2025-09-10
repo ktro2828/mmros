@@ -23,7 +23,7 @@
 namespace mmros::node
 {
 SingleCameraNode::SingleCameraNode(const std::string & name, const rclcpp::NodeOptions & options)
-: rclcpp::Node(name)
+: rclcpp::Node(name, options)
 {
   google::InitGoogleLogging(name.c_str());
   google::InstallFailureSignalHandler();

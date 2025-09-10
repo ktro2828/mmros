@@ -20,7 +20,6 @@
 
 #include <sensor_msgs/msg/image.hpp>
 
-#include <optional>
 #include <string>
 
 namespace mmros::node
@@ -52,15 +51,6 @@ protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:
-  /**
-   * @brief Return QoS of the specified topic.
-   *
-   * If it fails to load the specified QoS, returns `std::nullopt`.
-   *
-   * @param query_topic Topic name.
-   */
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
-
   image_transport::Subscriber subscription_;  //!< Image subscription.
 };
 }  // namespace mmros::node

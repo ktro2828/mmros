@@ -21,7 +21,6 @@
 #include <sensor_msgs/msg/image.hpp>
 
 #include <functional>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -56,18 +55,17 @@ protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:
+  /**
+   * @brief Connect to a single image topic.
+   *
+   * @param image_topic Image topic name.
+   * @param callback Callback function to be called when a new image is received.
+   * @param use_raw Whether to use raw images or not.
+   * @return True if the connection was successful, false otherwise.
+   */
   bool onConnectForSingleCamera(
     const std::string & image_topic,
     const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
-
-  /**
-   * @brief Return QoS of the specified topic.
-   *
-   * If it fails to load the specified QoS, returns `std::nullopt`.
-   *
-   * @param query_topic Topic name.
-   */
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
   std::vector<image_transport::Subscriber> subscriptions_;  //!< Subscribers for each camera topic.
 };

@@ -28,6 +28,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace mmros::node
@@ -38,12 +39,13 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(std::move(onnx_path), std::move(precision));
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
-    detector::SemanticSegmenter2dConfig detector_config{mean, std};
-    detector_ = std::make_unique<detector::SemanticSegmenter2D>(trt_config, detector_config);
+    detector::SemanticSegmenter2dConfig detector_config{std::move(mean), std::move(std)};
+    detector_ = std::make_unique<detector::SemanticSegmenter2D>(
+      std::move(trt_config), std::move(detector_config));
   }
 
   {

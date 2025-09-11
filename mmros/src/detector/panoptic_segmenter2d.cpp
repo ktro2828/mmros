@@ -288,14 +288,14 @@ archetype::Result<outputs_type> PanopticSegmenter2D::postprocess(
         continue;
       }
 
-      boxes.emplace_back(box);
+      boxes.push_back(std::move(box));
     }
     // Output mask
     cv::Mat mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
     std::memcpy(
       mask.data, out_segments.data() + i * output_height * output_width,
       sizeof(unsigned char) * 1 * output_height * output_width);
-    output.emplace_back(boxes, mask);
+    output.emplace_back(std::move(boxes), std::move(mask));
   }
 
   return archetype::Ok(output);

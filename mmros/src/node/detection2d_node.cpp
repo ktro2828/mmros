@@ -33,6 +33,7 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace mmros::node
@@ -43,15 +44,17 @@ Detection2dNode::Detection2dNode(const rclcpp::NodeOptions & options)
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(std::move(onnx_path), std::move(precision));
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
     auto score_threshold = declare_parameter<float>("detector.score_threshold");
     auto box_format_str = declare_parameter<std::string>("detector.box_format");
     archetype::BoxFormat2D box_format = archetype::to_box_format2d(box_format_str);
-    detector::Detector2dConfig detector_config{mean, std, box_format, score_threshold};
-    detector_ = std::make_unique<detector::Detector2D>(trt_config, detector_config);
+    detector::Detector2dConfig detector_config{
+      std::move(mean), std::move(std), box_format, score_threshold};
+    detector_ =
+      std::make_unique<detector::Detector2D>(std::move(trt_config), std::move(detector_config));
   }
 
   {
@@ -105,7 +108,7 @@ void Detection2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr msg)
       box_msg.score = box.score;
       box_msg.label = box.label;
 
-      output_msg.boxes.emplace_back(box_msg);
+      output_msg.boxes.push_back(std::move(box_msg));
     }
     pub_->publish(output_msg);
   }

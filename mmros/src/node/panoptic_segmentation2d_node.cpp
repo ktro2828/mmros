@@ -29,6 +29,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace mmros::node
@@ -39,15 +40,17 @@ PanopticSegmentation2dNode::PanopticSegmentation2dNode(const rclcpp::NodeOptions
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(std::move(onnx_path), std::move(precision));
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
     auto score_threshold = declare_parameter<double>("detector.score_threshold");
     auto box_format_str = declare_parameter<std::string>("detector.box_format");
     archetype::BoxFormat2D box_format = archetype::to_box_format2d(box_format_str);
-    detector::PanopticSegmenter2dConfig detector_config{mean, std, box_format, score_threshold};
-    detector_ = std::make_unique<detector::PanopticSegmenter2D>(trt_config, detector_config);
+    detector::PanopticSegmenter2dConfig detector_config{
+      std::move(mean), std::move(std), box_format, score_threshold};
+    detector_ = std::make_unique<detector::PanopticSegmenter2D>(
+      std::move(trt_config), std::move(detector_config));
   }
 
   {
@@ -102,7 +105,7 @@ void PanopticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSha
       box_msg.score = box.score;
       box_msg.label = box.label;
 
-      output_box_msg.boxes.emplace_back(box_msg);
+      output_box_msg.boxes.push_back(std::move(box_msg));
     }
     pub_box_->publish(output_box_msg);
 

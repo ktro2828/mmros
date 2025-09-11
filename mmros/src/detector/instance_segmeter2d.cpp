@@ -269,7 +269,7 @@ archetype::Result<outputs_type> InstanceSegmenter2D::postprocess(
         continue;
       }
 
-      boxes.emplace_back(box);
+      boxes.push_back(std::move(box));
 
       cv::Mat mask(
         output_height, output_width, CV_32F,
@@ -281,9 +281,9 @@ archetype::Result<outputs_type> InstanceSegmenter2D::postprocess(
       mask.convertTo(
         mask, CV_8U, 255.0 / (max_val - min_val), -min_val * 255.0 / (max_val - min_val));
 
-      masks.emplace_back(mask);
+      masks.push_back(std::move(mask));
     }
-    outputs.emplace_back(boxes, masks);
+    outputs.emplace_back(std::move(boxes), std::move(masks));
   }
 
   return archetype::Ok(outputs);

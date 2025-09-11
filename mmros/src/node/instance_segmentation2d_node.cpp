@@ -45,15 +45,17 @@ InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions
   {
     auto onnx_path = declare_parameter<std::string>("tensorrt.onnx_path");
     auto precision = declare_parameter<std::string>("tensorrt.precision");
-    tensorrt::TrtCommonConfig trt_config(onnx_path, precision);
+    tensorrt::TrtCommonConfig trt_config(std::move(onnx_path), std::move(precision));
 
     auto mean = declare_parameter<std::vector<double>>("detector.mean");
     auto std = declare_parameter<std::vector<double>>("detector.std");
     auto score_threshold = declare_parameter<double>("detector.score_threshold");
     auto box_format_str = declare_parameter<std::string>("detector.box_format");
     archetype::BoxFormat2D box_format = archetype::to_box_format2d(box_format_str);
-    detector::InstanceSegmenter2dConfig detector_config{mean, std, box_format, score_threshold};
-    detector_ = std::make_unique<detector::InstanceSegmenter2D>(trt_config, detector_config);
+    detector::InstanceSegmenter2dConfig detector_config{
+      std::move(mean), std::move(std), box_format, score_threshold};
+    detector_ = std::make_unique<detector::InstanceSegmenter2D>(
+      std::move(trt_config), std::move(detector_config));
   }
 
   {
@@ -114,7 +116,7 @@ void InstanceSegmentation2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr
       segment_msg.mask =
         *cv_bridge::CvImage(msg->header, sensor_msgs::image_encodings::MONO8, mask).toImageMsg();
 
-      segments_msg.segments.emplace_back(segment_msg);
+      segments_msg.segments.push_back(std::move(segment_msg));
     }
     pub_segment_->publish(segments_msg);
   }

@@ -222,7 +222,7 @@ archetype::Result<outputs_type> SemanticSegmenter2D::postprocess(
     std::memcpy(
       mask.data, out_mask.data() + i * output_height * output_width,
       sizeof(unsigned char) * 1 * output_height * output_width);
-    output.emplace_back(mask);
+    output.push_back(std::move(mask));
   }
 
   return archetype::Ok(output);

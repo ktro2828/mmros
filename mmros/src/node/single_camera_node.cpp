@@ -31,8 +31,7 @@ SingleCameraNode::SingleCameraNode(const std::string & name, const rclcpp::NodeO
   google::InstallFailureSignalHandler();
 }
 
-void SingleCameraNode::onConnect(
-  const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw)
+void SingleCameraNode::onConnect(const Callback & callback, bool use_raw)
 {
   auto resolve_topic_name = [this](const std::string & query) {
     return this->get_node_topics_interface()->resolve_topic_name(query);

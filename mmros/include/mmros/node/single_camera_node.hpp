@@ -30,6 +30,8 @@ namespace mmros::node
 class SingleCameraNode : public rclcpp::Node
 {
 public:
+  using Callback = image_transport::Subscriber::Callback;
+
   /**
    * @brief Construct a new SingleCameraNode object.
    *
@@ -44,8 +46,7 @@ public:
    * @param callback Callback function.
    * @param use_raw Indicates whether to use raw image.
    */
-  void onConnect(
-    const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
+  void onConnect(const Callback & callback, bool use_raw);
 
 protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.

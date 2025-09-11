@@ -36,8 +36,7 @@ MultiCameraNode::MultiCameraNode(const std::string & name, const rclcpp::NodeOpt
 }
 
 void MultiCameraNode::onConnect(
-  const std::vector<std::string> & image_topics,
-  const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw)
+  const std::vector<std::string> & image_topics, const Callback & callback, bool use_raw)
 {
   subscriptions_.clear();
 
@@ -53,8 +52,7 @@ void MultiCameraNode::onConnect(
 }
 
 bool MultiCameraNode::onConnectForSingleCamera(
-  const std::string & image_topic,
-  const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw)
+  const std::string & image_topic, const Callback & callback, bool use_raw)
 {
   const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {

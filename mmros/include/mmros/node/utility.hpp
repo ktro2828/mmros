@@ -36,5 +36,17 @@ inline std::optional<rclcpp::QoS> getTopicQos(const rclcpp::Node * node, const s
   return publisher_info.size() != 1 ? std::nullopt
                                     : std::make_optional(publisher_info[0].qos_profile());
 }
+
+/**
+ * @brief Resolve a topic name.
+ *
+ * @param node The node to query.
+ * @param query The topic name to resolve.
+ * @return std::string The resolved topic name.
+ */
+inline std::string resolveTopicName(rclcpp::Node * node, const std::string & query)
+{
+  return node->get_node_topics_interface()->resolve_topic_name(query);
+}
 }  // namespace mmros::node
 #endif  // MMROS__NODE__UTILITY_HPP_

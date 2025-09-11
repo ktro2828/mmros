@@ -33,11 +33,7 @@ SingleCameraNode::SingleCameraNode(const std::string & name, const rclcpp::NodeO
 
 void SingleCameraNode::onConnect(const Callback & callback, bool use_raw)
 {
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
-
-  const auto image_topic = resolve_topic_name("~/input/image");
+  const auto image_topic = resolveTopicName(this, "~/input/image");
 
   const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {

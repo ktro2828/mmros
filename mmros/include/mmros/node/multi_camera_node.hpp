@@ -32,6 +32,8 @@ namespace mmros::node
 class MultiCameraNode : public rclcpp::Node
 {
 public:
+  using Callback = image_transport::Subscriber::Callback;
+
   /**
    * @brief Constructor for MultiCameraNode.
    *
@@ -48,8 +50,7 @@ public:
    * @param use_raw Whether to use raw images or not.
    */
   void onConnect(
-    const std::vector<std::string> & image_topics,
-    const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
+    const std::vector<std::string> & image_topics, const Callback & callback, bool use_raw);
 
 protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
@@ -64,8 +65,7 @@ private:
    * @return True if the connection was successful, false otherwise.
    */
   bool onConnectForSingleCamera(
-    const std::string & image_topic,
-    const std::function<void(sensor_msgs::msg::Image::ConstSharedPtr)> & callback, bool use_raw);
+    const std::string & image_topic, const Callback & callback, bool use_raw);
 
   std::vector<image_transport::Subscriber> subscriptions_;  //!< Subscribers for each camera topic.
 };

@@ -68,7 +68,9 @@ bool MultiCameraNode::onConnectForSingleCamera(
     subscriptions_.emplace_back(std::move(subscription));
     return true;
   } else {
-    RCLCPP_ERROR(get_logger(), "Failed to create subscription for topic '%s'", image_topic.c_str());
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 5000, "Failed to create subscription for topic '%s'",
+      image_topic.c_str());
     return false;
   }
 }

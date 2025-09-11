@@ -52,6 +52,9 @@ void SingleCameraNode::onConnect(
         get_logger(), "Successfully subscribed to %s, connection timer canceled",
         image_topic.c_str());
     }
+  } else {
+    RCLCPP_WARN_THROTTLE(
+      get_logger(), *get_clock(), 5000, "Failed to subscribe to %s", image_topic.c_str());
   }
 }
 }  // namespace mmros::node

@@ -43,7 +43,8 @@ void CameraLidarNode::onConnect(
   bool success =
     onConnectLidar(pointcloud_callback) &&
     std::all_of(image_topics.begin(), image_topics.end(), [&](const auto & image_topic) {
-      auto camera_id = &image_topic - &image_topics.front();
+      auto camera_id = std::distance(
+        image_topics.begin(), std::find(image_topics.begin(), image_topics.end(), image_topic));
       return onConnectForSingleCamera(camera_id, image_topic, image_callback, use_raw);
     });
 

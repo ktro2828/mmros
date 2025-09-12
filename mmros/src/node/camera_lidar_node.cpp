@@ -43,7 +43,9 @@ void CameraLidarNode::onConnect(
   bool success =
     onConnectLidar(pointcloud_callback) &&
     std::all_of(image_topics.begin(), image_topics.end(), [&](const auto & image_topic) {
-      return onConnectForSingleCamera(image_topic, image_callback, use_raw);
+      auto camera_id = std::distance(
+        image_topics.begin(), std::find(image_topics.begin(), image_topics.end(), image_topic));
+      return onConnectForSingleCamera(camera_id, image_topic, image_callback, use_raw);
     });
 
   if (success && connection_timer_) {
@@ -70,7 +72,8 @@ bool CameraLidarNode::onConnectLidar(const PointCloudCallback & pointcloud_callb
 }
 
 bool CameraLidarNode::onConnectForSingleCamera(
-  const std::string & image_topic, const ImageCallback & image_callback, bool use_raw)
+  size_t camera_id, const std::string & image_topic, const ImageCallback & image_callback,
+  bool use_raw)
 {
   const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
@@ -78,8 +81,11 @@ bool CameraLidarNode::onConnectForSingleCamera(
     options.callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
     const auto subscription = image_transport::create_subscription(
-      this, image_topic, image_callback, use_raw ? "raw" : "compressed",
-      image_qos->get_rmw_qos_profile(), options);
+      this, image_topic,
+      [image_callback, camera_id](sensor_msgs::msg::Image::ConstSharedPtr msg) {
+        image_callback(msg, camera_id);
+      },
+      use_raw ? "raw" : "compressed", image_qos->get_rmw_qos_profile(), options);
 
     image_subscriptions_.emplace_back(std::move(subscription));
     return true;

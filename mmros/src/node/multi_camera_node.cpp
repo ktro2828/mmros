@@ -42,7 +42,9 @@ void MultiCameraNode::onConnect(
 
   bool success =
     std::all_of(image_topics.begin(), image_topics.end(), [&](const auto & image_topic) {
-      return onConnectForSingleCamera(image_topic, callback, use_raw);
+      auto camera_id = std::distance(
+        image_topics.begin(), std::find(image_topics.begin(), image_topics.end(), image_topic));
+      return onConnectForSingleCamera(camera_id, image_topic, callback, use_raw);
     });
 
   if (success && connection_timer_) {
@@ -52,7 +54,7 @@ void MultiCameraNode::onConnect(
 }
 
 bool MultiCameraNode::onConnectForSingleCamera(
-  const std::string & image_topic, const Callback & callback, bool use_raw)
+  size_t camera_id, const std::string & image_topic, const Callback & callback, bool use_raw)
 {
   const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
@@ -60,8 +62,11 @@ bool MultiCameraNode::onConnectForSingleCamera(
     options.callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
     const auto subscription = image_transport::create_subscription(
-      this, image_topic, callback, use_raw ? "raw" : "compressed", image_qos->get_rmw_qos_profile(),
-      options);
+      this, image_topic,
+      [callback, camera_id](sensor_msgs::msg::Image::ConstSharedPtr msg) {
+        callback(msg, camera_id);
+      },
+      use_raw ? "raw" : "compressed", image_qos->get_rmw_qos_profile(), options);
 
     subscriptions_.emplace_back(std::move(subscription));
     return true;

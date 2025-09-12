@@ -32,7 +32,7 @@ namespace mmros::node
 class MultiCameraNode : public rclcpp::Node
 {
 public:
-  using Callback = image_transport::Subscriber::Callback;
+  using Callback = std::function<void(sensor_msgs::msg::Image::ConstSharedPtr, size_t)>;
 
   /**
    * @brief Constructor for MultiCameraNode.
@@ -59,13 +59,14 @@ private:
   /**
    * @brief Connect to a single image topic.
    *
+   * @param camera_id Camera ID.
    * @param image_topic Image topic name.
    * @param callback Callback function to be called when a new image is received.
    * @param use_raw Whether to use raw images or not.
    * @return True if the connection was successful, false otherwise.
    */
   bool onConnectForSingleCamera(
-    const std::string & image_topic, const Callback & callback, bool use_raw);
+    size_t camera_id, const std::string & image_topic, const Callback & callback, bool use_raw);
 
   std::vector<image_transport::Subscriber> subscriptions_;  //!< Subscribers for each camera topic.
 };

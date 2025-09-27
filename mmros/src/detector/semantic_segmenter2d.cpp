@@ -21,6 +21,7 @@
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
 
 #include <opencv2/core/mat.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include <NvInferRuntime.h>
 
@@ -215,14 +216,35 @@ archetype::Result<outputs_type> SemanticSegmenter2D::postprocess(
   outputs_type output;
   output.reserve(batch_size);
 
-  // convert int64_t class IDs to unsigned char for OpenCV Mat
+  constexpr int64_t max_class_id = 255;
+  // Convert int64_t class IDs to unsigned char and resize to original image size
   for (size_t i = 0; i < batch_size; ++i) {
-    output_type mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
+    const auto & orig_image = images[i];
+    const float scale = scales_[i];
+    // Create model output mask
+    cv::Mat model_mask(output_height, output_width, CV_8UC1, cv::Scalar(0));
     for (size_t j = 0; j < output_height * output_width; ++j) {
       int64_t class_id = output_h[i * output_height * output_width + j];
-      mask.data[j] = static_cast<unsigned char>(class_id);
+      model_mask.data[j] =
+        static_cast<unsigned char>(std::min(std::max(class_id, 0L), max_class_id));
     }
-    output.push_back(std::move(mask));
+
+    // Calculate the actual resized dimensions based on letterbox scale
+    const int scaled_w = static_cast<int>(orig_image.cols * scale);
+    const int scaled_h = static_cast<int>(orig_image.rows * scale);
+
+    // Extract the valid region (letterbox uses top-left alignment)
+    cv::Rect valid_region(
+      0, 0, std::min(scaled_w, static_cast<int>(output_width)),
+      std::min(scaled_h, static_cast<int>(output_height)));
+
+    cv::Mat valid_mask = model_mask(valid_region);
+    // Resize back to original image size using nearest neighbor to preserve class labels
+    output_type final_mask;
+    cv::resize(
+      valid_mask, final_mask, cv::Size(orig_image.cols, orig_image.rows), 0, 0, cv::INTER_NEAREST);
+
+    output.push_back(std::move(final_mask));
   }
 
   return archetype::Ok(output);

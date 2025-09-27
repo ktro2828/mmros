@@ -97,14 +97,25 @@ void Segmentation2dVisualizer::callback(
     return;
   }
 
+  // Check if image and mask sizes match (they should after letterbox correction)
+  if (in_image_ptr->image.size() != in_mask_ptr->image.size()) {
+    cv::Mat resized_mask;
+    cv::resize(
+      in_mask_ptr->image, resized_mask, in_image_ptr->image.size(), 0, 0, cv::INTER_NEAREST);
+    in_mask_ptr->image = resized_mask;
+  }
+
+  // Apply color mapping
   const auto & lut = color_map_.getLookUpTable();
   cv::Mat color_mask;
   cv::applyColorMap(in_mask_ptr->image, color_mask, lut);
 
-  // align source image size to mask one
+  // Convert color_mask from BGR to RGB for consistency with input image
+  cv::cvtColor(color_mask, color_mask, cv::COLOR_BGR2RGB);
+
+  // Create overlay - images should now be the same size
   cv::Mat overlay;
-  cv::resize(in_image_ptr->image, overlay, {color_mask.cols, color_mask.rows});
-  cv::addWeighted(overlay, 0.5, color_mask, 0.5, 1.0, overlay);
+  cv::addWeighted(in_image_ptr->image, 0.6, color_mask, 0.4, 0.0, overlay);
 
   cv_bridge::CvImage out_image_msg;
   out_image_msg.header = image_msg->header;

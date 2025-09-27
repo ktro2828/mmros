@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     tensorrt:
-      onnx_path: $(var data_path)/panoptic_fpn_r50_fpn_1x_coco-static-800x1344.onnx
+      onnx_path: $(var directory/onnx)/panoptic_fpn_r50_fpn_1x_coco-static-800x1344.onnx
       precision: fp32
     detector:
       mean: [123.675, 116.28, 103.53]

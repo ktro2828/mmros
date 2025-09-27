@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     tensorrt:
-      onnx_path: $(var data_path)/deimv2_dinov3_l_coco-static-640x640.onnx
+      onnx_path: $(var directory/onnx)/deimv2_dinov3_l_coco-static-640x640.onnx
       precision: fp32
     detector:
       mean: [123.675, 116.28, 103.53]

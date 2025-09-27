@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     tensorrt:
-      onnx_path: $(var data_path)/detr_r50_8xb2-150e_coco-static-800x1344.onnx
+      onnx_path: $(var directory/onnx)/detr_r50_8xb2-150e_coco-static-800x1344.onnx
       precision: fp32
     detector:
       mean: [123.675, 116.28, 103.53]

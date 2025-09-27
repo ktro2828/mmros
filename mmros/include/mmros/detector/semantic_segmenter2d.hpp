@@ -101,7 +101,7 @@ private:
   int64_t in_height_;                     //!< Model input height.
   int64_t in_width_;                      //!< Model input width.
 
-  cuda::CudaUniquePtr<int[]> output_d_;  //!< Output mask pointer on the device. [B, 1, H, W].
+  cuda::CudaUniquePtr<int64_t[]> output_d_;  //!< Output mask pointer on the device. [B, 1, H, W].
 };
 }  // namespace mmros::detector
 #endif  // MMROS__DETECTOR__SEMANTIC_SEGMENTER2D_HPP_

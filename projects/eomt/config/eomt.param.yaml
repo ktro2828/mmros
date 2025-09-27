@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    tensorrt:
+      onnx_path: $(var directory/onnx)/eomt_large_semantic_cisyscapes-static-1024x1024.onnx
+      precision: fp32
+    detector:
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]

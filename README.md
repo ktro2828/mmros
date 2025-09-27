@@ -2,7 +2,7 @@
 
 ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
 
-![SAMPLE](./docs/assets/detection2d.gif)
+![DEMO](./docs/assets/demo.gif)
 
 ## Requirements
 

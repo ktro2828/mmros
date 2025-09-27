@@ -135,7 +135,7 @@ void SemanticSegmenter2D::initCudaPtr(size_t batch_size)
   auto out_dims = trt_common_->getOutputDims(0);
   const auto out_size = get_dim_size(out_dims);
   if (!output_d_) {
-    output_d_ = cuda::make_unique<int[]>(out_size * batch_size);
+    output_d_ = cuda::make_unique<int64_t[]>(out_size * batch_size);
   } else {
     cuda::clear_async(output_d_.get(), out_size * batch_size, stream_);
   }
@@ -202,12 +202,12 @@ archetype::Result<outputs_type> SemanticSegmenter2D::postprocess(
   const auto output_height = static_cast<size_t>(out_dims.d[2]);
   const auto output_width = static_cast<size_t>(out_dims.d[3]);
 
-  std::vector<int> output_h(batch_size * 1 * output_width * output_height);
+  std::vector<int64_t> output_h(batch_size * 1 * output_width * output_height);
   try {
     CHECK_CUDA_ERROR(
       ::cudaMemcpy(
         output_h.data(), output_d_.get(),
-        sizeof(int) * batch_size * 1 * output_width * output_height, ::cudaMemcpyDeviceToHost));
+        sizeof(int64_t) * batch_size * 1 * output_width * output_height, ::cudaMemcpyDeviceToHost));
   } catch (const archetype::MmRosException & e) {
     return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
@@ -215,13 +215,13 @@ archetype::Result<outputs_type> SemanticSegmenter2D::postprocess(
   outputs_type output;
   output.reserve(batch_size);
 
-  // NOTE: casting int[] to uchar[] first
-  std::vector<unsigned char> out_mask(output_h.begin(), output_h.end());
+  // convert int64_t class IDs to unsigned char for OpenCV Mat
   for (size_t i = 0; i < batch_size; ++i) {
     output_type mask = cv::Mat::zeros(output_height, output_width, CV_8UC1);
-    std::memcpy(
-      mask.data, out_mask.data() + i * output_height * output_width,
-      sizeof(unsigned char) * 1 * output_height * output_width);
+    for (size_t j = 0; j < output_height * output_width; ++j) {
+      int64_t class_id = output_h[i * output_height * output_width + j];
+      mask.data[j] = static_cast<unsigned char>(class_id);
+    }
     output.push_back(std::move(mask));
   }
 

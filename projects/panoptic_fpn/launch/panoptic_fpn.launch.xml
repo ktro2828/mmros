@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <arg name="param_path" default="$(find-pkg-share panoptic_fpn)/config/panoptic_fpn.param.yaml"/>
-  <arg name="data_path" default="$(find-pkg-share panoptic_fpn)/data"/>
+  <arg name="file/parameter" default="$(find-pkg-share panoptic_fpn)/config/panoptic_fpn.param.yaml" description="Path to the parameter file"/>
+  <arg name="directory/onnx" default="$(find-pkg-share panoptic_fpn)/data" description="Path to the ONNX model directory"/>
 
-  <arg name="input/image" default="input/image"/>
-  <arg name="output/boxes" default="output/boxes"/>
-  <arg name="output/semantic_mask" default="output/semantic_mask"/>
-  <arg name="use_raw" default="false"/>
-  <arg name="build_only" default="false"/>
+  <arg name="input/image" default="input/image" description="Input image topic"/>
+  <arg name="output/boxes" default="output/boxes" description="Output bounding boxes topic"/>
+  <arg name="output/semantic_mask" default="output/semantic_mask" description="Output semantic mask topic"/>
+  <arg name="use_raw" default="false" description="Use raw image"/>
+  <arg name="build_only" default="false" description="Build only"/>
 
-  <arg name="visualize" default="true"/>
+  <arg name="visualize" default="true" description="Visualize output boxes and masks"/>
 
   <group>
     <push-ros-namespace namespace="panoptic_fpn"/>
     <node pkg="mmros" exec="mmros_panoptic_segmentation2d_exe" name="detector" output="screen">
-      <param from="$(var param_path)" allow_substs="true"/>
+      <param from="$(var file/parameter)" allow_substs="true"/>
       <remap from="~/input/image" to="$(var input/image)"/>
       <remap from="~/output/boxes" to="$(var output/boxes)"/>
       <remap from="~/output/semantic_mask" to="$(var output/semantic_mask)"/>

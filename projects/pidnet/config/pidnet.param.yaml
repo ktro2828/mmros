@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     tensorrt:
-      onnx_path: $(var data_path)/pidnet-l_2xb6-120k_cityscapes-static-1024x1024.onnx
+      onnx_path: $(var directory/onnx)/pidnet-l_2xb6-120k_cityscapes-static-1024x1024.onnx
       precision: fp32
     detector:
       mean: [123.675, 116.28, 103.53]

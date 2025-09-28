@@ -14,7 +14,7 @@ For the details of the model configuration and results, please refer to [here](h
 
 | Backbone |  Input Shape  | Precision |  Device  | Median Enqueue Time (ms) |
 | :------: | :-----------: | :-------: | :------: | :----------------------: |
-|  DinoV2  | 1x3x1024x1024 |   FP32    | RTX 3060 |          2.177           |
+|  DinoV2  | 1x3x1024x1024 |   FP32    | RTX 3060 |         734.257          |
 
 ## Custom TensorRT Plugins
 

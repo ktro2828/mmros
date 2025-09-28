@@ -47,6 +47,7 @@ ROS 2 support of [OpenMMLab](https://openmmlab.com/) projects using TensorRT.
 |                       | Camera   | [DEIMv2 (ArXiv'2025)](./docs/projects/deimv2.md)                   |
 | Semantic Segmentation | Camera   | [Mask2Former (CVPR'2022)](./docs/projects/mask2former.md)          |
 |                       | Camera   | [PIDNet (ArXiv'2022)](./docs/projects/pidnet.md)                   |
+|                       | Camera   | [EoMT (CVPR'2025)](./docs/projects/eomt.md)                        |
 | Instance Segmentation | Camera   | [Instance RTMDet (ArXiv'2022)](./docs/projects/instance_rtmdet.md) |
 | Panoptic Segmentation | Camera   | [Panoptic FPN (CVPR'2019)](./docs/projects/panoptic_fpn.md)        |
 

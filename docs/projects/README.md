@@ -31,9 +31,9 @@ Edit your launch file, which is `projects/my_project/launch/my_project.launch.xm
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-  <!-- Model parameters and onnx file path -->
-  <arg name="param_path" default="$(find-pkg-share my_project)/config/my_project.param.yaml"/>
-  <arg name="data_path" default="$(find-pkg-share my_project)/data"/>
+  <!-- Model parameters and ONNX file path -->
+  <arg name="file/parameter" default="$(find-pkg-share my_project)/config/my_project.param.yaml"/>
+  <arg name="directory/onnx" default="$(find-pkg-share my_project)/data"/>
 
   <!-- I/O topic names -->
   <arg name="input/image" default="input/image"/>
@@ -52,7 +52,7 @@ Edit your launch file, which is `projects/my_project/launch/my_project.launch.xm
     <push-ros-namespace namespace="my_project"/>
     <!-- Detector node -->
     <node pkg="mmros" exec="mmros_detection2d_exe" name="detector" output="screen">
-      <param from="$(var param_path)" allow_substs="true"/>
+      <param from="$(var file/parameter)" allow_substs="true"/>
       <remap from="~/input/image" to="$(var input/image)"/>
       <remap from="~/output/boxes" to="$(var output/boxes)"/>
       <param name="use_raw" value="$(var use_raw)"/>
@@ -77,8 +77,8 @@ Edit your parameter file, which is `projects/my_project/config/my_config.param.y
 /**:
   ros__parameters:
     tensorrt:
-      onnx_path: $(var data_path)/my_project.onnx
-      precision: fp32
+      onnx_path: $(var directory/onnx)/my_project.onnx
+      precision: fp32 # [fp32, fp16, int8]
     detector:
       mean: [0.0, 0.0, 0.0]
       std: [1.0, 1.0, 1.0]

@@ -39,10 +39,10 @@ namespace mmros::detector
 using outputs_type = PanopticSegmenter2D::outputs_type;
 
 PanopticSegmenter2D::PanopticSegmenter2D(
-  const tensorrt::TrtCommonConfig & trt_config, const PanopticSegmenter2dConfig & detector_config)
+  tensorrt::TrtCommonConfig && trt_config, PanopticSegmenter2dConfig && detector_config)
 {
-  trt_common_ = std::make_unique<tensorrt::TrtCommon>(trt_config);
-  detector_config_ = std::make_unique<PanopticSegmenter2dConfig>(detector_config);
+  trt_common_ = std::make_unique<tensorrt::TrtCommon>(std::move(trt_config));
+  detector_config_ = std::make_unique<PanopticSegmenter2dConfig>(std::move(detector_config));
 
   const auto network_input_dims = trt_common_->getTensorShape(0);
   const auto batch_size = network_input_dims.d[0];
@@ -198,22 +198,9 @@ void PanopticSegmenter2D::preprocess(const std::vector<cv::Mat> & images)
       images[0].cols * images[0].rows * 3 * batch_size * sizeof(unsigned char),
       ::cudaMemcpyHostToDevice, stream_));
 
-  // TODO(ktro2828): Refactoring not to load mean/std array every loop
-  std::vector<float> mean_h(detector_config_->mean.begin(), detector_config_->mean.end());
-  std::vector<float> std_h(detector_config_->std.begin(), detector_config_->std.end());
-  auto mean_d = cuda::make_unique<float[]>(mean_h.size());
-  auto std_d = cuda::make_unique<float[]>(std_h.size());
-
-  CHECK_CUDA_ERROR(
-    ::cudaMemcpyAsync(
-      mean_d.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
-  CHECK_CUDA_ERROR(
-    ::cudaMemcpyAsync(
-      std_d.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice, stream_));
-
   process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
     input_d_.get(), img_buf_d.get(), in_width_, in_height_, 3, images[0].cols, images[0].rows, 3,
-    batch_size, mean_d.get(), std_d.get(), stream_);
+    batch_size, detector_config_->mean.get(), detector_config_->std.get(), stream_);
 
   CHECK_CUDA_ERROR(cudaGetLastError());
 }

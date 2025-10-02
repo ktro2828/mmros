@@ -34,8 +34,25 @@ namespace mmros::detector
  */
 struct InstanceSegmenter2dConfig
 {
-  std::vector<double> mean;           //!< Image mean.
-  std::vector<double> std;            //!< Image std.
+  InstanceSegmenter2dConfig(
+    const std::vector<double> & _mean, const std::vector<double> & _std,
+    archetype::BoxFormat2D _box_format, double _score_threshold)
+  : box_format(_box_format), score_threshold(_score_threshold)
+  {
+    std::vector<float> mean_h(_mean.begin(), _mean.end());
+    std::vector<float> std_h(_std.begin(), _std.end());
+    mean = cuda::make_unique<float[]>(mean_h.size());
+    std = cuda::make_unique<float[]>(std_h.size());
+
+    CHECK_CUDA_ERROR(
+      ::cudaMemcpy(
+        mean.get(), mean_h.data(), mean_h.size() * sizeof(float), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(
+      ::cudaMemcpy(std.get(), std_h.data(), std_h.size() * sizeof(float), cudaMemcpyHostToDevice));
+  }
+
+  cuda::CudaUniquePtr<float[]> mean;  //!< Image mean on device.
+  cuda::CudaUniquePtr<float[]> std;   //!< Image std on device.
   archetype::BoxFormat2D box_format;  //!< Box format.
   double score_threshold;             //!< Score threshold.
 };
@@ -57,8 +74,7 @@ public:
    * @param detector_config
    */
   InstanceSegmenter2D(
-    const tensorrt::TrtCommonConfig & trt_config,
-    const InstanceSegmenter2dConfig & detector_config);
+    tensorrt::TrtCommonConfig && trt_config, InstanceSegmenter2dConfig && detector_config);
 
   /**
    * @brief Execute inference using input images.

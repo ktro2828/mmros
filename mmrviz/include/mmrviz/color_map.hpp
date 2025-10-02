@@ -62,7 +62,7 @@ public:
     return table_.at(idx);
   }
 
-  const cv::Mat & getLookUpTable() const noexcept { return lut_; }
+  const cv::Mat & lookup_table() const noexcept { return lut_; }
 
 private:
   std::array<cv::Scalar, num_color> table_;

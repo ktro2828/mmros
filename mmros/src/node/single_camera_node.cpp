@@ -31,11 +31,11 @@ SingleCameraNode::SingleCameraNode(const std::string & name, const rclcpp::NodeO
   google::InstallFailureSignalHandler();
 }
 
-void SingleCameraNode::onConnect(const Callback & callback, bool use_raw)
+void SingleCameraNode::on_connect(const Callback & callback, bool use_raw)
 {
-  const auto image_topic = resolveTopicName(this, "~/input/image");
+  const auto image_topic = resolve_topic_name(this, "~/input/image");
 
-  const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
+  const auto image_qos = to_topic_qos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
     subscription_ = image_transport::create_subscription(
       this, image_topic, callback, use_raw ? "raw" : "compressed",

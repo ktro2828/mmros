@@ -50,11 +50,11 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
 
   {
     using std::chrono_literals::operator""ms;
-    using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
     connection_timer_ = rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() {
-      this->onConnect(std::bind(&SemanticSegmentation2dNode::onImage, this, _1), use_raw);
+      this->on_connect(
+        [this](sensor_msgs::msg::Image::ConstSharedPtr msg) { this->callback(msg); }, use_raw);
     });
 
     pub_ = create_publisher<sensor_msgs::msg::Image>("~/output/mask", 1);
@@ -66,7 +66,7 @@ SemanticSegmentation2dNode::SemanticSegmentation2dNode(const rclcpp::NodeOptions
   }
 }
 
-void SemanticSegmentation2dNode::onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg)
+void SemanticSegmentation2dNode::callback(const sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
   cv_bridge::CvImagePtr in_image_ptr;
   try {

@@ -30,7 +30,7 @@ namespace mmros::node
  * @return std::optional<rclcpp::QoS> The QoS profile of the topic, or std::nullopt if the topic is
  * not published.
  */
-inline std::optional<rclcpp::QoS> getTopicQos(const rclcpp::Node * node, const std::string & topic)
+inline std::optional<rclcpp::QoS> to_topic_qos(const rclcpp::Node * node, const std::string & topic)
 {
   const auto publisher_info = node->get_publishers_info_by_topic(topic);
   return publisher_info.size() != 1 ? std::nullopt
@@ -44,7 +44,7 @@ inline std::optional<rclcpp::QoS> getTopicQos(const rclcpp::Node * node, const s
  * @param query The topic name to resolve.
  * @return std::string The resolved topic name.
  */
-inline std::string resolveTopicName(rclcpp::Node * node, const std::string & query)
+inline std::string resolve_topic_name(rclcpp::Node * node, const std::string & query)
 {
   return node->get_node_topics_interface()->resolve_topic_name(query);
 }

@@ -40,15 +40,15 @@ public:
    */
   SingleCameraNode(const std::string & name, const rclcpp::NodeOptions & options);
 
+protected:
   /**
    * @brief Check node connection and start subscribing.
    *
    * @param callback Callback function.
    * @param use_raw Indicates whether to use raw image.
    */
-  void onConnect(const Callback & callback, bool use_raw);
+  void on_connect(const Callback & callback, bool use_raw);
 
-protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:

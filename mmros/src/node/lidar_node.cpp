@@ -29,11 +29,11 @@ LidarNode::LidarNode(const std::string & name, const rclcpp::NodeOptions & optio
   google::InstallFailureSignalHandler();
 }
 
-void LidarNode::onConnect(const Callback & callback)
+void LidarNode::on_connect(const Callback & callback)
 {
-  const auto pointcloud_topic = resolveTopicName(this, "~/input/pointcloud");
+  const auto pointcloud_topic = resolve_topic_name(this, "~/input/pointcloud");
 
-  const auto pointcloud_qos = getTopicQos(this, pointcloud_topic);
+  const auto pointcloud_qos = to_topic_qos(this, pointcloud_topic);
   if (pointcloud_qos) {
     subscription_ = create_subscription<sensor_msgs::msg::PointCloud2>(
       pointcloud_topic, *pointcloud_qos, callback);

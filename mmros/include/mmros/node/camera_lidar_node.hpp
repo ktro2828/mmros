@@ -43,6 +43,7 @@ public:
    */
   CameraLidarNode(const std::string & name, const rclcpp::NodeOptions & options);
 
+protected:
   /**
    * @brief Connects the node to the pointcloud and image topics.
    *
@@ -51,11 +52,10 @@ public:
    * @param image_callback Callback function for image messages.
    * @param use_raw Whether to use raw image data.
    */
-  void onConnect(
+  void on_connect(
     const PointCloudCallback & pointcloud_callback, const std::vector<std::string> & image_topics,
     const ImageCallback & image_callback, bool use_raw);
 
-protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:
@@ -65,7 +65,7 @@ private:
    * @param callback Callback function to be called when a new pointcloud is received.
    * @return True if the connection was successful, false otherwise.
    */
-  bool onConnectLidar(const PointCloudCallback & pointcloud_callback);
+  bool on_connect_lidar(const PointCloudCallback & pointcloud_callback);
 
   /**
    * @brief Connect to a single image topic.
@@ -76,7 +76,7 @@ private:
    * @param use_raw Whether to use raw images or not.
    * @return True if the connection was successful, false otherwise.
    */
-  bool onConnectForSingleCamera(
+  bool on_connect_for_single_camera(
     size_t camera_id, const std::string & image_topic, const ImageCallback & image_callback,
     bool use_raw);
 

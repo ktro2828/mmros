@@ -42,6 +42,7 @@ public:
    */
   MultiCameraNode(const std::string & name, const rclcpp::NodeOptions & options);
 
+protected:
   /**
    * @brief Connect to multiple image topics.
    *
@@ -49,10 +50,9 @@ public:
    * @param callback Callback function to be called when a new image is received.
    * @param use_raw Whether to use raw images or not.
    */
-  void onConnect(
+  void on_connect(
     const std::vector<std::string> & image_topics, const Callback & callback, bool use_raw);
 
-protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:
@@ -65,7 +65,7 @@ private:
    * @param use_raw Whether to use raw images or not.
    * @return True if the connection was successful, false otherwise.
    */
-  bool onConnectForSingleCamera(
+  bool on_connect_for_single_camera(
     size_t camera_id, const std::string & image_topic, const Callback & callback, bool use_raw);
 
   std::vector<image_transport::Subscriber> subscriptions_;  //!< Subscribers for each camera topic.

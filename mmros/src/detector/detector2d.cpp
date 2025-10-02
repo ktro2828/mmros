@@ -18,7 +18,7 @@
 #include "mmros/archetype/exception.hpp"
 #include "mmros/archetype/result.hpp"
 #include "mmros/detector/utility.hpp"
-#include "mmros/process/image.hpp"
+#include "mmros/process/image_kernel.hpp"
 #include "mmros/tensorrt/cuda_check_error.hpp"
 #include "mmros/tensorrt/cuda_unique_ptr.hpp"
 #include "mmros/tensorrt/utility.hpp"

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MMROS__PROCESS__IMAGE_HPP_
-#define MMROS__PROCESS__IMAGE_HPP_
+#ifndef MMROS__PROCESS__IMAGE_KERNEL_HPP_
+#define MMROS__PROCESS__IMAGE_KERNEL_HPP_
 
 #include <cublas_v2.h>
 #include <cuda.h>
@@ -200,4 +200,4 @@ extern void argmax_gpu(
   unsigned char * dst, float * src, int d_w, int d_h, int s_w, int s_h, int s_c, int batch,
   cudaStream_t stream);
 }  // namespace mmros::process
-#endif  // MMROS__PROCESS__IMAGE_HPP_
+#endif  // MMROS__PROCESS__IMAGE_KERNEL_HPP_

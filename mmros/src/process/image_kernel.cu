@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "mmros/process/image.hpp"
+#include "mmros/process/image_kernel.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>

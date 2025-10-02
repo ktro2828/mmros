@@ -19,10 +19,7 @@
 
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
-#include <rclcpp/node.hpp>
-#include <rclcpp/node_options.hpp>
-#include <rclcpp/qos.hpp>
-#include <rclcpp/timer.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <mmros_msgs/msg/instance_segment_array2d.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -45,14 +42,12 @@ public:
 
   explicit InstanceSegmentation2dVisualizer(const rclcpp::NodeOptions & options);
 
+private:
+  void on_connect(bool use_raw);
+
   void callback(
     const image_type::ConstSharedPtr & image_msg,
     const segment_type::ConstSharedPtr & segments_msg);
-
-private:
-  void onConnect(bool use_raw);
-
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
   double mask_threshold_;  //!< Threshold value for mask.
 

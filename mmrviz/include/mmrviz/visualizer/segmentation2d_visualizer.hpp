@@ -19,10 +19,7 @@
 
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
-#include <rclcpp/node.hpp>
-#include <rclcpp/node_options.hpp>
-#include <rclcpp/qos.hpp>
-#include <rclcpp/timer.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <sensor_msgs/msg/image.hpp>
 
@@ -40,14 +37,12 @@ class Segmentation2dVisualizer : public rclcpp::Node
 public:
   explicit Segmentation2dVisualizer(const rclcpp::NodeOptions & options);
 
+private:
+  void on_connect(bool use_raw);
+
   void callback(
     const sensor_msgs::msg::Image::ConstSharedPtr & image_msg,
     const sensor_msgs::msg::Image::ConstSharedPtr & mask_msg);
-
-private:
-  void onConnect(bool use_raw);
-
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
   rclcpp::TimerBase::SharedPtr timer_;
   image_transport::SubscriberFilter image_sub_;

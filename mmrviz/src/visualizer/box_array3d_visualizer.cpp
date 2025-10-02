@@ -15,6 +15,7 @@
 #include "mmrviz/visualizer/box_array3d_visualizer.hpp"
 
 #include <image_transport/image_transport.hpp>
+#include <mmros/node/utility.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/operations.hpp>
 #include <opencv2/core/types.hpp>
@@ -185,30 +186,23 @@ BoxArray3dVisualizer::BoxArray3dVisualizer(const rclcpp::NodeOptions & options)
   using std::chrono_literals::operator""ms;
 
   bool use_raw = declare_parameter<bool>("use_raw");
-  timer_ =
-    rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, [this, use_raw]() { this->on_connect(use_raw); });
 
   pub_ = image_transport::create_publisher(this, "~/output/image");
 }
 
-void BoxArray3dVisualizer::onConnect(bool use_raw)
+void BoxArray3dVisualizer::on_connect(bool use_raw)
 {
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
+  const auto image_topic = mmros::node::resolve_topic_name(this, "~/input/image");
+  const auto image_qos = use_raw ? mmros::node::to_topic_qos(this, image_topic)
+                                 : mmros::node::to_topic_qos(this, image_topic + "/compressed");
 
-  const auto image_topic = resolve_topic_name("~/input/image");
-  auto image_topic_for_qos_query = image_topic;
-  if (!use_raw) {
-    image_topic_for_qos_query += "/compressed";
-  }
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
+  const auto camera_info_topic = mmros::node::resolve_topic_name(this, "~/input/camera_info");
+  const auto camera_info_qos = mmros::node::to_topic_qos(this, camera_info_topic);
 
-  const auto camera_info_topic = resolve_topic_name("~/input/camera_info");
-  const auto camera_info_qos = getTopicQos(camera_info_topic);
-
-  const auto boxes_topic = resolve_topic_name("~/input/boxes");
-  const auto boxes_qos = getTopicQos(boxes_topic);
+  const auto boxes_topic = mmros::node::resolve_topic_name(this, "~/input/boxes");
+  const auto boxes_qos = mmros::node::to_topic_qos(this, boxes_topic);
 
   bool is_image_ok = image_qos.has_value();
   bool is_camera_info_ok = camera_info_qos.has_value();
@@ -225,16 +219,6 @@ void BoxArray3dVisualizer::onConnect(bool use_raw)
     sync_ptr_->registerCallback(&BoxArray3dVisualizer::callback, this);
 
     timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> BoxArray3dVisualizer::getTopicQos(const std::string & query_topic)
-{
-  const auto publishers_info = get_publishers_info_by_topic(query_topic);
-  if (publishers_info.size() != 1) {
-    return std::nullopt;
-  } else {
-    return publishers_info[0].qos_profile();
   }
 }
 

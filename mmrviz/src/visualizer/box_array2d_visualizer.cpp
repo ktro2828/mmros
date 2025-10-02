@@ -15,6 +15,7 @@
 #include "mmrviz/visualizer/box_array2d_visualizer.hpp"
 
 #include <image_transport/image_transport.hpp>
+#include <mmros/node/utility.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/operations.hpp>
 #include <opencv2/core/types.hpp>
@@ -44,27 +45,20 @@ BoxArray2dVisualizer::BoxArray2dVisualizer(const rclcpp::NodeOptions & options)
   using std::chrono_literals::operator""ms;
 
   bool use_raw = declare_parameter<bool>("use_raw");
-  timer_ =
-    rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, [this, use_raw]() { this->on_connect(use_raw); });
 
   pub_ = image_transport::create_publisher(this, "~/output/image");
 }
 
-void BoxArray2dVisualizer::onConnect(bool use_raw)
+void BoxArray2dVisualizer::on_connect(bool use_raw)
 {
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
+  const auto image_topic = mmros::node::resolve_topic_name(this, "~/input/image");
+  const auto image_qos = use_raw ? mmros::node::to_topic_qos(this, image_topic)
+                                 : mmros::node::to_topic_qos(this, image_topic + "/compressed");
 
-  const auto image_topic = resolve_topic_name("~/input/image");
-  auto image_topic_for_qos_query = image_topic;
-  if (!use_raw) {
-    image_topic_for_qos_query += "/compressed";
-  }
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
-
-  const auto boxes_topic = resolve_topic_name("~/input/boxes");
-  const auto boxes_qos = getTopicQos(boxes_topic);
+  const auto boxes_topic = mmros::node::resolve_topic_name(this, "~/input/boxes");
+  const auto boxes_qos = mmros::node::to_topic_qos(this, boxes_topic);
 
   if (image_qos && boxes_qos) {
     const auto transport = use_raw ? "raw" : "compressed";
@@ -74,16 +68,6 @@ void BoxArray2dVisualizer::onConnect(bool use_raw)
     sync_ptr_->registerCallback(&BoxArray2dVisualizer::callback, this);
 
     timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> BoxArray2dVisualizer::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return {};
-  } else {
-    return publisher_info[0].qos_profile();
   }
 }
 

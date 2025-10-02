@@ -19,10 +19,7 @@
 
 #include <image_transport/publisher.hpp>
 #include <image_transport/subscriber_filter.hpp>
-#include <rclcpp/node.hpp>
-#include <rclcpp/node_options.hpp>
-#include <rclcpp/qos.hpp>
-#include <rclcpp/timer.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include <mmros_msgs/msg/box_array3d.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
@@ -54,6 +51,14 @@ public:
    */
   explicit BoxArray3dVisualizer(const rclcpp::NodeOptions & options);
 
+private:
+  /**
+   * @brief Check connection and start subscribing topics.
+   *
+   * @param use_raw Indicates whether to use raw image.
+   */
+  void on_connect(bool use_raw);
+
   /**
    * @brief Render 3D boxes on the subscribed image.
    *
@@ -65,21 +70,6 @@ public:
     const sensor_msgs::msg::Image::ConstSharedPtr & image_msg,
     const sensor_msgs::msg::CameraInfo::ConstSharedPtr & camera_info_msg,
     const mmros_msgs::msg::BoxArray3d::ConstSharedPtr & boxes_msg);
-
-private:
-  /**
-   * @brief Check connection and start subscribing topics.
-   *
-   * @param use_raw Indicates whether to use raw image.
-   */
-  void onConnect(bool use_raw);
-
-  /**
-   * @brief Return the QoS of the specified topic.
-   *
-   * @param query_topic Topic name.
-   */
-  std::optional<rclcpp::QoS> getTopicQos(const std::string & query_topic);
 
   rclcpp::TimerBase::SharedPtr timer_;           //!< Callback timer.
   image_transport::SubscriberFilter image_sub_;  //!< Image subscription.

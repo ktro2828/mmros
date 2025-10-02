@@ -17,6 +17,7 @@
 #include "mmrviz/color_map.hpp"
 
 #include <image_transport/image_transport.hpp>
+#include <mmros/node/utility.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/matx.hpp>
@@ -44,24 +45,20 @@ InstanceSegmentation2dVisualizer::InstanceSegmentation2dVisualizer(
   mask_threshold_ = declare_parameter<double>("mask_threshold", 0.8);
 
   bool use_raw = declare_parameter<bool>("use_raw");
-  timer_ =
-    rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, [this, use_raw]() { this->on_connect(use_raw); });
 
   pub_ = image_transport::create_publisher(this, "~/output/image");
 }
 
-void InstanceSegmentation2dVisualizer::onConnect(bool use_raw)
+void InstanceSegmentation2dVisualizer::on_connect(bool use_raw)
 {
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
+  const auto image_topic = mmros::node::resolve_topic_name(this, "~/input/image");
+  const auto image_qos = use_raw ? mmros::node::to_topic_qos(this, image_topic)
+                                 : mmros::node::to_topic_qos(this, image_topic + "/compressed");
 
-  const auto image_topic = resolve_topic_name("~/input/image");
-  const auto image_qos =
-    use_raw ? getTopicQos(image_topic) : getTopicQos(image_topic + "/compressed");
-
-  const auto segments_topic = resolve_topic_name("~/input/segments");
-  const auto segments_qos = getTopicQos(segments_topic);
+  const auto segments_topic = mmros::node::resolve_topic_name(this, "~/input/segments");
+  const auto segments_qos = mmros::node::to_topic_qos(this, segments_topic);
 
   if (image_qos && segments_qos) {
     const auto transport = use_raw ? "raw" : "compressed";
@@ -72,17 +69,6 @@ void InstanceSegmentation2dVisualizer::onConnect(bool use_raw)
     sync_ptr_->registerCallback(&InstanceSegmentation2dVisualizer::callback, this);
 
     timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> InstanceSegmentation2dVisualizer::getTopicQos(
-  const std::string & query_topic)
-{
-  const auto publishers_info = get_publishers_info_by_topic(query_topic);
-  if (publishers_info.size() != 1) {
-    return std::nullopt;
-  } else {
-    return publishers_info[0].qos_profile();
   }
 }
 
@@ -97,7 +83,7 @@ void InstanceSegmentation2dVisualizer::callback(
     return;
   }
 
-  const auto & lut = color_map_.getLookUpTable();
+  const auto & lut = color_map_.lookup_table();
   auto & image = in_image_ptr->image;
   for (size_t i = 0; i < segments_msg->segments.size(); ++i) {
     const auto & box = segments_msg->segments[i].box;

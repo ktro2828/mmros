@@ -15,6 +15,7 @@
 #include "mmrviz/visualizer/segmentation2d_visualizer.hpp"
 
 #include <image_transport/image_transport.hpp>
+#include <mmros/node/utility.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
@@ -41,27 +42,20 @@ Segmentation2dVisualizer::Segmentation2dVisualizer(const rclcpp::NodeOptions & o
   using std::chrono_literals::operator""ms;
 
   bool use_raw = declare_parameter<bool>("use_raw");
-  timer_ =
-    rclcpp::create_timer(this, get_clock(), 100ms, [this, use_raw]() { this->onConnect(use_raw); });
+  timer_ = rclcpp::create_timer(
+    this, get_clock(), 100ms, [this, use_raw]() { this->on_connect(use_raw); });
 
   pub_ = image_transport::create_publisher(this, "~/output/image");
 }
 
-void Segmentation2dVisualizer::onConnect(bool use_raw)
+void Segmentation2dVisualizer::on_connect(bool use_raw)
 {
-  auto resolve_topic_name = [this](const std::string & query) {
-    return this->get_node_topics_interface()->resolve_topic_name(query);
-  };
+  const auto image_topic = mmros::node::resolve_topic_name(this, "~/input/image");
+  const auto image_qos = use_raw ? mmros::node::to_topic_qos(this, image_topic)
+                                 : mmros::node::to_topic_qos(this, image_topic + "/compressed");
 
-  const auto image_topic = resolve_topic_name("~/input/image");
-  auto image_topic_for_qos_query = image_topic;
-  if (!use_raw) {
-    image_topic_for_qos_query += "/compressed";
-  }
-  const auto image_qos = getTopicQos(image_topic_for_qos_query);
-
-  const auto mask_topic = resolve_topic_name("~/input/mask");
-  const auto mask_qos = getTopicQos(mask_topic);
+  const auto mask_topic = mmros::node::resolve_topic_name(this, "~/input/mask");
+  const auto mask_qos = mmros::node::to_topic_qos(this, mask_topic);
 
   if (image_qos && mask_qos) {
     const auto transport = use_raw ? "raw" : "compressed";
@@ -71,16 +65,6 @@ void Segmentation2dVisualizer::onConnect(bool use_raw)
     sync_ptr_->registerCallback(&Segmentation2dVisualizer::callback, this);
 
     timer_->cancel();
-  }
-}
-
-std::optional<rclcpp::QoS> Segmentation2dVisualizer::getTopicQos(const std::string & query_topic)
-{
-  const auto publisher_info = get_publishers_info_by_topic(query_topic);
-  if (publisher_info.size() != 1) {
-    return {};
-  } else {
-    return publisher_info[0].qos_profile();
   }
 }
 
@@ -106,7 +90,7 @@ void Segmentation2dVisualizer::callback(
   }
 
   // Apply color mapping
-  const auto & lut = color_map_.getLookUpTable();
+  const auto & lut = color_map_.lookup_table();
   cv::Mat color_mask;
   cv::applyColorMap(in_mask_ptr->image, color_mask, lut);
 

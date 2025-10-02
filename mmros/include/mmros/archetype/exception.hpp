@@ -65,7 +65,7 @@ public:
    *
    * @param error `MmRosError` object.
    */
-  explicit MmRosException(const MmRosError & error) : error_(error) { appendMessagePrefix(); }
+  explicit MmRosException(const MmRosError & error) : error_(error) { append_message_prefix(); }
 
   /**
    * @brief Construct a new MmRosException object with error kind and message.
@@ -75,7 +75,7 @@ public:
    */
   MmRosException(const MmRosError_t & kind, const std::string & msg) : error_(kind, msg)
   {
-    appendMessagePrefix();
+    append_message_prefix();
   }
 
   /**
@@ -87,7 +87,7 @@ private:
   /**
    * @brief Append prefix to the error message depending on its kind.
    */
-  void appendMessagePrefix() noexcept
+  void append_message_prefix() noexcept
   {
     switch (error_.kind) {
       case MmRosError_t::TENSORRT:

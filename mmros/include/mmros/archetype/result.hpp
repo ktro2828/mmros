@@ -48,14 +48,14 @@ public:
   /**
    * @brief Check whether holding value is expected type.
    */
-  bool isOk() const noexcept { return std::holds_alternative<T>(value_); }
+  bool is_ok() const noexcept { return std::holds_alternative<T>(value_); }
 
   /**
    * @brief Return the expected value if it holds, otherwise throw `MmRosException`.
    */
   T unwrap() const
   {
-    if (isOk()) {
+    if (is_ok()) {
       return std::get<T>(value_);
     } else {
       throw MmRosException(std::get<MmRosError>(value_));
@@ -74,7 +74,7 @@ private:
  */
 
 template <typename T>
-Result<T> Ok(const T & value) noexcept
+Result<T> make_ok(const T & value) noexcept
 {
   return Result<T>(value);
 }
@@ -86,7 +86,7 @@ Result<T> Ok(const T & value) noexcept
  * @param error `MmRosError` object.
  */
 template <typename T>
-Result<T> Err(const MmRosError & error) noexcept
+Result<T> make_err(const MmRosError & error) noexcept
 {
   return Result<T>(error);
 }
@@ -98,7 +98,7 @@ Result<T> Err(const MmRosError & error) noexcept
  * @param kind Error kind.
  */
 template <typename T>
-Result<T> Err(const MmRosError_t & kind) noexcept
+Result<T> make_err(const MmRosError_t & kind) noexcept
 {
   MmRosError error(kind);
   return Result<T>(error);
@@ -112,7 +112,7 @@ Result<T> Err(const MmRosError_t & kind) noexcept
  * @param msg Error message.
  */
 template <typename T>
-Result<T> Err(const MmRosError_t & kind, const std::string & msg) noexcept
+Result<T> make_err(const MmRosError_t & kind, const std::string & msg) noexcept
 {
   MmRosError error(kind, msg);
   return Result<T>(error);

@@ -40,14 +40,14 @@ public:
    */
   LidarNode(const std::string & name, const rclcpp::NodeOptions & options);
 
+protected:
   /**
    * @brief Check node connection and start subscribing.
    *
    * @param callback Callback function.
    */
-  void onConnect(const Callback & callback);
+  void on_connect(const Callback & callback);
 
-protected:
   rclcpp::TimerBase::SharedPtr connection_timer_;  //!< Topic connection timer.
 
 private:

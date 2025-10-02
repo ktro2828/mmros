@@ -34,18 +34,18 @@ CameraLidarNode::CameraLidarNode(const std::string & name, const rclcpp::NodeOpt
   google::InstallFailureSignalHandler();
 }
 
-void CameraLidarNode::onConnect(
+void CameraLidarNode::on_connect(
   const PointCloudCallback & pointcloud_callback, const std::vector<std::string> & image_topics,
   const ImageCallback & image_callback, bool use_raw)
 {
   image_subscriptions_.clear();
 
   bool success =
-    onConnectLidar(pointcloud_callback) &&
+    on_connect_lidar(pointcloud_callback) &&
     std::all_of(image_topics.begin(), image_topics.end(), [&](const auto & image_topic) {
       auto camera_id = std::distance(
         image_topics.begin(), std::find(image_topics.begin(), image_topics.end(), image_topic));
-      return onConnectForSingleCamera(camera_id, image_topic, image_callback, use_raw);
+      return on_connect_for_single_camera(camera_id, image_topic, image_callback, use_raw);
     });
 
   if (success && connection_timer_) {
@@ -55,11 +55,11 @@ void CameraLidarNode::onConnect(
   }
 }
 
-bool CameraLidarNode::onConnectLidar(const PointCloudCallback & pointcloud_callback)
+bool CameraLidarNode::on_connect_lidar(const PointCloudCallback & pointcloud_callback)
 {
-  const auto pointcloud_topic = resolveTopicName(this, "~/input/pointcloud");
+  const auto pointcloud_topic = resolve_topic_name(this, "~/input/pointcloud");
 
-  const auto pointcloud_qos = getTopicQos(this, pointcloud_topic);
+  const auto pointcloud_qos = to_topic_qos(this, pointcloud_topic);
   if (pointcloud_qos) {
     pointcloud_subscription_ = create_subscription<sensor_msgs::msg::PointCloud2>(
       pointcloud_topic, *pointcloud_qos, pointcloud_callback);
@@ -71,11 +71,11 @@ bool CameraLidarNode::onConnectLidar(const PointCloudCallback & pointcloud_callb
   }
 }
 
-bool CameraLidarNode::onConnectForSingleCamera(
+bool CameraLidarNode::on_connect_for_single_camera(
   size_t camera_id, const std::string & image_topic, const ImageCallback & image_callback,
   bool use_raw)
 {
-  const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
+  const auto image_qos = to_topic_qos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
     rclcpp::SubscriptionOptions options;
     options.callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);

@@ -40,14 +40,14 @@ public:
    */
   explicit PanopticSegmentation2dNode(const rclcpp::NodeOptions & options);
 
+private:
   /**
    * @brief Main callback for input image.
    *
    * @param msg Input image message.
    */
-  virtual void onImage(const sensor_msgs::msg::Image::ConstSharedPtr msg);
+  void callback(sensor_msgs::msg::Image::ConstSharedPtr msg);
 
-private:
   std::unique_ptr<detector::PanopticSegmenter2D> detector_;            //!< TensorRT detector.
   rclcpp::Publisher<mmros_msgs::msg::BoxArray2d>::SharedPtr pub_box_;  //!< Output box publisher.
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_mask_;     //!< Output mask publisher.

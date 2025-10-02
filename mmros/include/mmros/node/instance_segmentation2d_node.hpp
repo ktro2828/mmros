@@ -35,14 +35,14 @@ public:
    */
   explicit InstanceSegmentation2dNode(const rclcpp::NodeOptions & options);
 
+private:
   /**
    * @brief Main callback for input image.
    *
    * @param msg Input image message.
    */
-  virtual void onImage(sensor_msgs::msg::Image::ConstSharedPtr msg);
+  void callback(sensor_msgs::msg::Image::ConstSharedPtr msg);
 
-private:
   std::unique_ptr<detector::InstanceSegmenter2D> detector_;  //!< TensorRT detector.
   rclcpp::Publisher<mmros_msgs::msg::InstanceSegmentArray2d>::SharedPtr
     pub_segment_;  //!< Output segment publisher.

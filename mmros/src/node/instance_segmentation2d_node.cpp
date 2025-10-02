@@ -60,11 +60,11 @@ InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions
 
   {
     using std::chrono_literals::operator""ms;
-    using std::placeholders::_1;
 
     bool use_raw = declare_parameter<bool>("use_raw");
     connection_timer_ = create_timer(this, get_clock(), 100ms, [this, use_raw]() {
-      this->onConnect(std::bind(&InstanceSegmentation2dNode::onImage, this, _1), use_raw);
+      this->on_connect(
+        [this](sensor_msgs::msg::Image::ConstSharedPtr msg) { this->callback(msg); }, use_raw);
     });
 
     pub_segment_ =
@@ -77,7 +77,7 @@ InstanceSegmentation2dNode::InstanceSegmentation2dNode(const rclcpp::NodeOptions
   }
 }
 
-void InstanceSegmentation2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr msg)
+void InstanceSegmentation2dNode::callback(sensor_msgs::msg::Image::ConstSharedPtr msg)
 {
   cv_bridge::CvImagePtr in_image_ptr;
   try {

@@ -35,7 +35,7 @@ MultiCameraNode::MultiCameraNode(const std::string & name, const rclcpp::NodeOpt
   google::InstallFailureSignalHandler();
 }
 
-void MultiCameraNode::onConnect(
+void MultiCameraNode::on_connect(
   const std::vector<std::string> & image_topics, const Callback & callback, bool use_raw)
 {
   subscriptions_.clear();
@@ -44,7 +44,7 @@ void MultiCameraNode::onConnect(
     std::all_of(image_topics.begin(), image_topics.end(), [&](const auto & image_topic) {
       auto camera_id = std::distance(
         image_topics.begin(), std::find(image_topics.begin(), image_topics.end(), image_topic));
-      return onConnectForSingleCamera(camera_id, image_topic, callback, use_raw);
+      return on_connect_for_single_camera(camera_id, image_topic, callback, use_raw);
     });
 
   if (success && connection_timer_) {
@@ -53,10 +53,10 @@ void MultiCameraNode::onConnect(
   }
 }
 
-bool MultiCameraNode::onConnectForSingleCamera(
+bool MultiCameraNode::on_connect_for_single_camera(
   size_t camera_id, const std::string & image_topic, const Callback & callback, bool use_raw)
 {
-  const auto image_qos = getTopicQos(this, use_raw ? image_topic : image_topic + "/compressed");
+  const auto image_qos = to_topic_qos(this, use_raw ? image_topic : image_topic + "/compressed");
   if (image_qos) {
     rclcpp::SubscriptionOptions options;
     options.callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);

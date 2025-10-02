@@ -90,7 +90,7 @@ void InstanceSegmentation2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr
   std::vector<std::pair<archetype::Boxes2D, std::vector<cv::Mat>>> batch_outputs;
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
-    batch_outputs = detector_->doInference(images).unwrap();
+    batch_outputs = detector_->do_inference(images).unwrap();
   } catch (const archetype::MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;

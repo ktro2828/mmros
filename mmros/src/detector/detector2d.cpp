@@ -73,7 +73,7 @@ Detector2D::Detector2D(tensorrt::TrtCommonConfig && trt_config, Detector2dConfig
   CHECK_CUDA_ERROR(cudaStreamCreate(&stream_));
 }
 
-archetype::Result<outputs_type> Detector2D::doInference(
+archetype::Result<outputs_type> Detector2D::do_inference(
   const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
@@ -82,7 +82,7 @@ archetype::Result<outputs_type> Detector2D::doInference(
 
   // 1. Init CUDA pointers
   try {
-    initCudaPtr(images.size());
+    init_cuda_ptr(images.size());
   } catch (const archetype::MmRosException & e) {
     return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
@@ -114,7 +114,7 @@ archetype::Result<outputs_type> Detector2D::doInference(
 }
 
 /// Initialize CUDA pointers.
-void Detector2D::initCudaPtr(size_t batch_size)
+void Detector2D::init_cuda_ptr(size_t batch_size)
 {
   auto get_dim_size = [&](const nvinfer1::Dims & dims) {
     return std::accumulate(dims.d + 1, dims.d + dims.nbDims, 1, std::multiplies<int>());

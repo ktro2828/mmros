@@ -81,7 +81,7 @@ public:
   /**
    * @brief Execute inference using input images. Returns `std::nullopt` if the inference fails.
    *
-   * @param images Vector of mutiple batch images.
+   * @param images Vector of multiple batch images.
    * @return archetype::Result<outputs_type>
    */
   archetype::Result<outputs_type> do_inference(const std::vector<cv::Mat> & images) noexcept;

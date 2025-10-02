@@ -43,7 +43,7 @@ void preprocess_image(
       std::min(static_cast<float>(in_width) / img.cols, static_cast<float>(in_height) / img.rows);
     scales.emplace_back(scale);
 
-    int index = b * img.cols * img.rows * 3;
+    size_t index = b * img.cols * img.rows * 3;
     // Copy into pinned memory
     memcpy(img_buf_h.get() + index, &img.data[0], img.cols * img.rows * 3 * sizeof(unsigned char));
   }

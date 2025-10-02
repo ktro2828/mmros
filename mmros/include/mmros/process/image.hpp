@@ -1,4 +1,4 @@
-// Copyright 2023 TIER IV, Inc.
+// Copyright 2025 Kotaro Uetake.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,189 +15,28 @@
 #ifndef MMROS__PROCESS__IMAGE_HPP_
 #define MMROS__PROCESS__IMAGE_HPP_
 
-#include <cublas_v2.h>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_runtime_api.h>
-#include <curand.h>
+#include "mmros/process/image_kernel.hpp"
+
+#include <opencv2/core/mat.hpp>
+
+#include <vector>
 
 namespace mmros::process
 {
-struct Roi
-{
-  int x;
-  int y;
-  int w;
-  int h;
-};
-
 /**
- * @brief Resize a image using bilinear interpolation on gpus
- * @param[out] dst Resized image
- * @param[in] src image
- * @param[in] d_w width for resized image
- * @param[in] d_h height for resized image
- * @param[in] d_c channel for resized image
- * @param[in] s_w width for input image
- * @param[in] s_h height for input image
- * @param[in] s_c channel for input image
- * @param[in] stream cuda stream
+ * Run preprocessing for image.
+ *
+ * @param input_d Pointer to input image on device.
+ * @param scales Mutable reference to the vector of scale factors.
+ * @param images Read-only reference to the vector of source images.
+ * @param in_width Model input width.
+ * @param in_height Model input height.
+ * @param mean Pointer to the image mean values.
+ * @param std Pointer to the image std values.
+ * @param stream CUDA stream.
  */
-extern void resize_bilinear_gpu(
-  unsigned char * dst, unsigned char * src, int d_w, int d_h, int d_c, int s_w, int s_h, int s_c,
-  cudaStream_t stream);
-
-/**
- * @brief Letterbox a image on gpus
- * @param[out] dst letterbox-ed image
- * @param[in] src image
- * @param[in] d_w width for letterbox-ing
- * @param[in] d_h height for letterbox-ing
- * @param[in] d_c channel for letterbox-ing
- * @param[in] s_w width for input image
- * @param[in] s_h height for input image
- * @param[in] s_c channel for input image
- * @param[in] stream cuda stream
- */
-extern void letterbox_gpu(
-  unsigned char * dst, unsigned char * src, int d_w, int d_h, int d_c, int s_w, int s_h, int s_c,
-  cudaStream_t stream);
-
-/**
- * @brief NHWC to NHWC conversion
- * @param[out] dst converted image
- * @param[in] src image
- * @param[in] d_w width for a image
- * @param[in] d_h height for a image
- * @param[in] d_c channel for a image
- * @param[in] stream cuda stream
- */
-extern void nchw_to_nhwc_gpu(
-  unsigned char * dst, unsigned char * src, int d_w, int d_h, int d_c, cudaStream_t stream);
-
-/**
- * @brief Unsigned char to float32 for inference
- * @param[out] dst32 converted image
- * @param[in] src image
- * @param[in] d_w width for a image
- * @param[in] d_h height for a image
- * @param[in] d_c channel for a image
- * @param[in] stream cuda stream
- */
-extern void to_float_gpu(
-  float * dst32, unsigned char * src, int d_w, int d_h, int d_c, cudaStream_t stream);
-
-/**
- * @brief Resize and letterbox a image using bilinear interpolation on gpus
- * @param[out] dst processed image
- * @param[in] src image
- * @param[in] d_w width for output
- * @param[in] d_h height for output
- * @param[in] d_c channel for output
- * @param[in] s_w width for input
- * @param[in] s_h height for input
- * @param[in] s_c channel for input
- * @param[in] stream cuda stream
- */
-extern void resize_bilinear_letterbox_gpu(
-  unsigned char * dst, unsigned char * src, int d_w, int d_h, int d_c, int s_w, int s_h, int s_c,
-  cudaStream_t stream);
-
-/**
- * @brief Optimized preprocessing including resize, letterbox, nhwc2nchw, toFloat and normalization
- * for YOLOX on gpus
- * @param[out] dst processed image
- * @param[in] src image
- * @param[in] d_w width for output
- * @param[in] d_h height for output
- * @param[in] d_c channel for output
- * @param[in] s_w width for input
- * @param[in] s_h height for input
- * @param[in] s_c channel for input
- * @param[in] mean mean values for each channel
- * @param[in] std std values for each channel
- * @param[in] stream cuda stream
- */
-extern void resize_bilinear_letterbox_nhwc_to_nchw32_gpu(
-  float * dst, unsigned char * src, int d_w, int d_h, int d_c, int s_w, int s_h, int s_c,
-  float * mean, float * std, cudaStream_t stream);
-
-/**
- * @brief Optimized preprocessing including resize, letterbox, nhwc2nchw, toFloat and normalization
- * with batching for YOLOX on gpus
- * @param[out] dst processed image
- * @param[in] src image
- * @param[in] d_w width for output
- * @param[in] d_h height for output
- * @param[in] d_c channel for output
- * @param[in] s_w width for input
- * @param[in] s_h height for input
- * @param[in] s_c channel for input
- * @param[in] batch batch size
- * @param[in] mean mean values for each channel
- * @param[in] std std values for each channel
- * @param[in] stream cuda stream
- */
-extern void resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
-  float * dst, unsigned char * src, int d_w, int d_h, int d_c, int s_w, int s_h, int s_c, int batch,
-  float * mean, float * std, cudaStream_t stream);
-
-/**
- * @brief Optimized preprocessing including crop, resize, letterbox, nhwc2nchw, toFloat and
- * normalization with batching for YOLOX on gpus
- * @param[out] dst processed image
- * @param[in] src image
- * @param[in] d_w width for output
- * @param[in] d_h height for output
- * @param[in] d_c channel for output
- * @param[in] s_w width for input
- * @param[in] s_h height for input
- * @param[in] s_c channel for input
- * @param[in] d_roi regions of interest for cropping
- * @param[in] batch batch size
- * @param[in] mean mean values for each channel
- * @param[in] std std values for each channel
- * @param[in] stream cuda stream
- */
-extern void crop_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
-  float * dst, unsigned char * src, int d_w, int d_h, int d_c, Roi * d_roi, int s_w, int s_h,
-  int s_c, int batch, float * mean, float * std, cudaStream_t stream);
-
-/**
- * @brief Optimized multi-scale preprocessing including crop, resize, letterbox, nhwc2nchw, toFloat
- * and normalization with batching for YOLOX on gpus
- * @param[out] dst processed image
- * @param[in] src image
- * @param[in] d_w width for output
- * @param[in] d_h height for output
- * @param[in] d_c channel for output
- * @param[in] s_w width for input
- * @param[in] s_h height for input
- * @param[in] s_c channel for input
- * @param[in] d_roi regions of interest for cropping
- * @param[in] batch batch size
- * @param[in] mean mean values for each channel
- * @param[in] std std values for each channel
- * @param[in] stream cuda stream
- */
-extern void multi_scale_resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
-  float * dst, unsigned char * src, int d_w, int d_h, int d_c, Roi * d_roi, int s_w, int s_h,
-  int s_c, int batch, float * mean, float * std, cudaStream_t stream);
-
-/**
- * @brief Argmax on GPU
- * @param[out] dst processed image
- * @param[in] src probability map
- * @param[in] d_w width for output
- * @param[in] d_h height for output
- * @param[in] s_w width for input
- * @param[in] s_h height for input
- * @param[in] s_c channel for input
- * @param[in] batch batch size
- * @param[in] stream cuda stream
- */
-extern void argmax_gpu(
-  unsigned char * dst, float * src, int d_w, int d_h, int s_w, int s_h, int s_c, int batch,
-  cudaStream_t stream);
+void preprocess_image(
+  float * input_d, std::vector<float> & scales, const std::vector<cv::Mat> & images,
+  int64_t in_width, int64_t in_height, float * mean, float * std, cudaStream_t stream);
 }  // namespace mmros::process
 #endif  // MMROS__PROCESS__IMAGE_HPP_

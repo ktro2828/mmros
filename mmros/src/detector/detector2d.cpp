@@ -20,18 +20,13 @@
 #include "mmros/detector/utility.hpp"
 #include "mmros/process/image.hpp"
 #include "mmros/tensorrt/cuda_check_error.hpp"
-#include "mmros/tensorrt/cuda_unique_ptr.hpp"
 #include "mmros/tensorrt/utility.hpp"
 
 #include <NvInferRuntimeBase.h>
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <numeric>
-#include <optional>
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -153,41 +148,9 @@ void Detector2D::initCudaPtr(size_t batch_size)
 /// Execute preprocess.
 void Detector2D::preprocess(const std::vector<cv::Mat> & images)
 {
-  // (B, C, H, W)
-  const auto batch_size = images.size();
-  auto in_dims = trt_common_->getTensorShape(0);
-
-  cuda::CudaUniquePtrHost<unsigned char[]> img_buf_h;
-  cuda::CudaUniquePtr<unsigned char[]> img_buf_d;
-
-  scales_.clear();
-  for (auto b = 0; b < images.size(); ++b) {
-    const auto & img = images.at(b);
-    if (!img_buf_h) {
-      img_buf_h = cuda::make_unique_host<unsigned char[]>(
-        img.cols * img.rows * 3 * batch_size, cudaHostAllocWriteCombined);
-      img_buf_d = cuda::make_unique<unsigned char[]>(img.cols * img.rows * 3 * batch_size);
-    }
-    const float scale =
-      std::min(static_cast<float>(in_width_) / img.cols, static_cast<float>(in_height_) / img.rows);
-    scales_.emplace_back(scale);
-
-    int index = b * img.cols * img.rows * 3;
-    // Copy into pinned memory
-    memcpy(img_buf_h.get() + index, &img.data[0], img.cols * img.rows * 3 * sizeof(unsigned char));
-  }
-
-  CHECK_CUDA_ERROR(
-    ::cudaMemcpyAsync(
-      img_buf_d.get(), img_buf_h.get(),
-      images[0].cols * images[0].rows * 3 * batch_size * sizeof(unsigned char),
-      ::cudaMemcpyHostToDevice, stream_));
-
-  process::resize_bilinear_letterbox_nhwc_to_nchw32_batch_gpu(
-    input_d_.get(), img_buf_d.get(), in_width_, in_height_, 3, images[0].cols, images[0].rows, 3,
-    batch_size, detector_config_->mean.get(), detector_config_->std.get(), stream_);
-
-  CHECK_CUDA_ERROR(cudaGetLastError());
+  process::preprocess_image(
+    input_d_.get(), scales_, images, in_width_, in_height_, detector_config_->mean.get(),
+    detector_config_->std.get(), stream_);
 }
 
 /// Execute postprocess

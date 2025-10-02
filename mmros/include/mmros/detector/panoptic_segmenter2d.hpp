@@ -84,7 +84,7 @@ public:
    * @param images Vector of multiple batch images.
    * @return archetype::Result<outputs_type>
    */
-  archetype::Result<outputs_type> doInference(const std::vector<cv::Mat> & images) noexcept;
+  archetype::Result<outputs_type> do_inference(const std::vector<cv::Mat> & images) noexcept;
 
 private:
   /**
@@ -94,7 +94,7 @@ private:
    *
    * @throw Throw `MmRosException` if any CUDA processing failed.
    */
-  void initCudaPtr(size_t batch_size);
+  void init_cuda_ptr(size_t batch_size);
 
   /**
    * @brief Execute preprocessing.

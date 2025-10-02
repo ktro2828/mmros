@@ -72,7 +72,7 @@ PanopticSegmenter2D::PanopticSegmenter2D(
   CHECK_CUDA_ERROR(cudaStreamCreate(&stream_));
 }
 
-archetype::Result<outputs_type> PanopticSegmenter2D::doInference(
+archetype::Result<outputs_type> PanopticSegmenter2D::do_inference(
   const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
@@ -81,7 +81,7 @@ archetype::Result<outputs_type> PanopticSegmenter2D::doInference(
 
   // 1. Init CUDA pointers
   try {
-    initCudaPtr(images.size());
+    init_cuda_ptr(images.size());
   } catch (const archetype::MmRosException & e) {
     return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
@@ -114,7 +114,7 @@ archetype::Result<outputs_type> PanopticSegmenter2D::doInference(
   return postprocess(images);
 }
 
-void PanopticSegmenter2D::initCudaPtr(size_t batch_size)
+void PanopticSegmenter2D::init_cuda_ptr(size_t batch_size)
 {
   auto get_dim_size = [&](const nvinfer1::Dims & dims) {
     return std::accumulate(dims.d + 1, dims.d + dims.nbDims, 1, std::multiplies<int>());

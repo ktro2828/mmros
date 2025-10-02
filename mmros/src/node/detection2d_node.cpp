@@ -88,7 +88,7 @@ void Detection2dNode::onImage(sensor_msgs::msg::Image::ConstSharedPtr msg)
   std::vector<archetype::Boxes2D> batch_boxes;
   try {
     std::vector<cv::Mat> images{in_image_ptr->image};
-    batch_boxes = detector_->doInference(images).unwrap();
+    batch_boxes = detector_->do_inference(images).unwrap();
   } catch (const archetype::MmRosException & e) {
     RCLCPP_ERROR_STREAM(get_logger(), e.what());
     return;

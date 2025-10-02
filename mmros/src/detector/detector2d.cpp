@@ -77,21 +77,21 @@ archetype::Result<outputs_type> Detector2D::doInference(
   const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::UNKNOWN, "No image.");
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::UNKNOWN, "No image.");
   }
 
   // 1. Init CUDA pointers
   try {
     initCudaPtr(images.size());
   } catch (const archetype::MmRosException & e) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   // 2. Execute preprocess
   try {
     preprocess(images);
   } catch (const archetype::MmRosException & e) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   // 3. Set tensors
@@ -99,14 +99,14 @@ archetype::Result<outputs_type> Detector2D::doInference(
   if (!trt_common_->setTensorsAddresses(buffers)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::TENSORRT, os.str());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::TENSORRT, os.str());
   }
 
   // 4. Execute inference
   if (!trt_common_->enqueueV3(stream_)) {
     std::ostringstream os;
     os << "@" << __FILE__ << ", #F:" << __FUNCTION__ << ", #L:" << __LINE__;
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::TENSORRT, os.str());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::TENSORRT, os.str());
   }
 
   // 5. Execute postprocess
@@ -184,7 +184,7 @@ archetype::Result<outputs_type> Detector2D::postprocess(
         sizeof(int) * batch_size * num_detection * class_dim, ::cudaMemcpyDeviceToHost, stream_));
     CHECK_CUDA_ERROR(cudaStreamSynchronize(stream_));
   } catch (const archetype::MmRosException & e) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   outputs_type output;
@@ -210,6 +210,6 @@ archetype::Result<outputs_type> Detector2D::postprocess(
     output.push_back(std::move(boxes));
   }
 
-  return archetype::Ok(output);
+  return archetype::make_ok(output);
 }
 }  // namespace mmros::detector

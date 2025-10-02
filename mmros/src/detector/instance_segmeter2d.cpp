@@ -79,33 +79,33 @@ archetype::Result<outputs_type> InstanceSegmenter2D::doInference(
   const std::vector<cv::Mat> & images) noexcept
 {
   if (images.empty()) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::UNKNOWN, "No image.");
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::UNKNOWN, "No image.");
   }
 
   // 1. Init CUDA pointers
   try {
     initCudaPtr(images.size());
   } catch (const archetype::MmRosException & e) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   // 2. Execute preprocess
   try {
     preprocess(images);
   } catch (const archetype::MmRosException & e) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   // 3. Set tensors
   std::vector<void *> buffers{
     input_d_.get(), out_boxes_d_.get(), out_labels_d_.get(), out_segments_d_.get()};
   if (!trt_common_->setTensorsAddresses(buffers)) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::TENSORRT);
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::TENSORRT);
   }
 
   // 4. Execute inference
   if (!trt_common_->enqueueV3(stream_)) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::TENSORRT);
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::TENSORRT);
   }
 
   // 5. Execute postprocess
@@ -196,7 +196,7 @@ archetype::Result<outputs_type> InstanceSegmenter2D::postprocess(
         ::cudaMemcpyDeviceToHost, stream_));
     CHECK_CUDA_ERROR(::cudaStreamSynchronize(stream_));
   } catch (const archetype::MmRosException & e) {
-    return archetype::Err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
+    return archetype::make_err<outputs_type>(archetype::MmRosError_t::CUDA, e.what());
   }
 
   outputs_type outputs;
@@ -234,6 +234,6 @@ archetype::Result<outputs_type> InstanceSegmenter2D::postprocess(
     outputs.emplace_back(std::move(boxes), std::move(masks));
   }
 
-  return archetype::Ok(outputs);
+  return archetype::make_ok(outputs);
 }
 }  // namespace mmros::detector

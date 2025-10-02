@@ -32,7 +32,7 @@ void preprocess_image(
   cuda::CudaUniquePtr<unsigned char[]> img_buf_d;
 
   scales.clear();
-  for (auto b = 0; b < images.size(); ++b) {
+  for (size_t b = 0; b < images.size(); ++b) {
     const auto & img = images.at(b);
     if (!img_buf_h) {
       img_buf_h = cuda::make_unique_host<unsigned char[]>(

@@ -1,0 +1,26 @@
+/**:
+  ros__parameters:
+    tensorrt:
+      onnx_path: /home/ktro2828/myWorkspace/Sparse4D/artifacts/sparse4dv3.onnx
+      precision: fp32
+    detector:
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]
+      score_threshold: 0.3
+    input:
+      image_topics:
+        - /nuscenes/CAM_FRONT/image
+        - /nuscenes/CAM_FRONT_LEFT/image
+        - /nuscenes/CAM_FRONT_RIGHT/image
+        - /nuscenes/CAM_BACK/image
+        - /nuscenes/CAM_BACK_LEFT/image
+        - /nuscenes/CAM_BACK_RIGHT/image
+      camera_info_topics:
+        - /nuscenes/CAM_FRONT/camera_info
+        - /nuscenes/CAM_FRONT_LEFT/camera_info
+        - /nuscenes/CAM_FRONT_RIGHT/camera_info
+        - /nuscenes/CAM_BACK/camera_info
+        - /nuscenes/CAM_BACK_LEFT/camera_info
+        - /nuscenes/CAM_BACK_RIGHT/camera_info
+      lidar_frame: LIDAR_TOP
+      sync_tolerance_sec: 0.05

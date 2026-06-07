@@ -115,6 +115,38 @@ public:
   [[nodiscard]] nvinfer1::Dims getTensorShape(const char * tensor_name) const noexcept;
 
   /**
+   * @brief Get tensor data type by index from TensorRT engine.
+   *
+   * @param[in] index Tensor index.
+   * @return Tensor data type.
+   */
+  [[nodiscard]] nvinfer1::DataType getTensorDataType(const int32_t index) const noexcept;
+
+  /**
+   * @brief Get tensor data type by name from TensorRT engine.
+   *
+   * @param[in] tensor_name Tensor name.
+   * @return Tensor data type.
+   */
+  [[nodiscard]] nvinfer1::DataType getTensorDataType(const char * tensor_name) const noexcept;
+
+  /**
+   * @brief Get tensor IO mode by index from TensorRT engine.
+   *
+   * @param[in] index Tensor index.
+   * @return Tensor IO mode.
+   */
+  [[nodiscard]] nvinfer1::TensorIOMode getTensorIOMode(const int32_t index) const noexcept;
+
+  /**
+   * @brief Get tensor IO mode by name from TensorRT engine.
+   *
+   * @param[in] tensor_name Tensor name.
+   * @return Tensor IO mode.
+   */
+  [[nodiscard]] nvinfer1::TensorIOMode getTensorIOMode(const char * tensor_name) const noexcept;
+
+  /**
    * @brief Get input tensor shape by index from TensorRT network.
    *
    * @param[in] index Tensor index.

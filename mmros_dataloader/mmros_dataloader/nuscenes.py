@@ -209,28 +209,30 @@ class NuScenesPublisher(Node):
 
     def _broadcast_tf_static(self) -> None:
         """Broadcast `/tf_static` for each sensor."""
+        transforms = []
         for cs_record in self._nusc.calibrated_sensor:
             sensor_record = self._nusc.get("sensor", cs_record["sensor_token"])
 
-            self._broadcast_tf(
-                frame_id=self.EGO_FRAME_ID,
-                child_frame_id=sensor_record["channel"],
-                translation=cs_record["translation"],
-                rotation=cs_record["rotation"],
-                is_static=True,
+            transforms.append(
+                self._create_transform(
+                    frame_id=self.EGO_FRAME_ID,
+                    child_frame_id=sensor_record["channel"],
+                    translation=cs_record["translation"],
+                    rotation=cs_record["rotation"],
+                )
             )
 
-    def _broadcast_tf(
+        self._tf_static_broadcaster.sendTransform(transforms)
+
+    def _create_transform(
         self,
         frame_id: str,
         child_frame_id: str,
         translation: Sequence[float],
         rotation: Sequence[float],
         stamp: Time | None = None,
-        *,
-        is_static: bool = False,
-    ) -> None:
-        """Broadcast transform.
+    ) -> TransformStamped:
+        """Create a transform message.
 
         Args:
             frame_id (str): Frame ID.
@@ -239,8 +241,6 @@ class NuScenesPublisher(Node):
             rotation (Sequence[float]): Quaternion (w, x, y, z).
             stamp (Time | None, optional): Timestamp to publish.
                 If None, current time will be used. Defaults to None.
-            is_static (bool, optional): Indicates whether this transform is static or not.
-                Defaults to False.
         """
         t = TransformStamped()
 
@@ -261,6 +261,21 @@ class NuScenesPublisher(Node):
         t.transform.rotation.x = float(qx)
         t.transform.rotation.y = float(qy)
         t.transform.rotation.z = float(qz)
+
+        return t
+
+    def _broadcast_tf(
+        self,
+        frame_id: str,
+        child_frame_id: str,
+        translation: Sequence[float],
+        rotation: Sequence[float],
+        stamp: Time | None = None,
+        *,
+        is_static: bool = False,
+    ) -> None:
+        """Broadcast transform."""
+        t = self._create_transform(frame_id, child_frame_id, translation, rotation, stamp)
 
         if is_static:
             self._tf_static_broadcaster.sendTransform(t)

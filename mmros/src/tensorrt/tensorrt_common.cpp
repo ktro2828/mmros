@@ -229,6 +229,36 @@ nvinfer1::Dims TrtCommon::getTensorShape(const char * tensor_name) const noexcep
   return engine_->getTensorShape(tensor_name);
 }
 
+nvinfer1::DataType TrtCommon::getTensorDataType(const int32_t index) const noexcept
+{
+  auto const & name = getIOTensorName(index);
+  return getTensorDataType(name);
+}
+
+nvinfer1::DataType TrtCommon::getTensorDataType(const char * tensor_name) const noexcept
+{
+  if (!engine_) {
+    logger_->log(nvinfer1::ILogger::Severity::kERROR, "Engine is not initialized");
+    return nvinfer1::DataType::kFLOAT;
+  }
+  return engine_->getTensorDataType(tensor_name);
+}
+
+nvinfer1::TensorIOMode TrtCommon::getTensorIOMode(const int32_t index) const noexcept
+{
+  auto const & name = getIOTensorName(index);
+  return getTensorIOMode(name);
+}
+
+nvinfer1::TensorIOMode TrtCommon::getTensorIOMode(const char * tensor_name) const noexcept
+{
+  if (!engine_) {
+    logger_->log(nvinfer1::ILogger::Severity::kERROR, "Engine is not initialized");
+    return nvinfer1::TensorIOMode::kNONE;
+  }
+  return engine_->getTensorIOMode(tensor_name);
+}
+
 nvinfer1::Dims TrtCommon::getInputDims(const int32_t index) const noexcept
 {
   if (!network_) {
